@@ -1,3 +1,7 @@
+import loggerFactory from './logger' // laugh it up, Joel
+
+const logger = new loggerFactory(true)
+
 // Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
 
 // CHIP-8 Interpreter
@@ -45,31 +49,44 @@ function decode(inst) {
   // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values from the instruction
   // We are using bitmasking to get these values. If you don't quite get what's happening here, look up https://en.wikipedia.org/wiki/Mask_(computing)
   const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
-  const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
-  const x = inst & 0x0F00 // x - A 4-bit value, the lower 4 bits of the high byte of the instruction
-  const y = inst & 0xF000 // y - A 4-bit value, the upper 4 bits of the low byte of the instruction
+  const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction  
+  const x = inst & 0x0F00 // x - A 4-bit value, the lower 4 bits of the high byte of the instructionction
+  const y = inst & 0x00F0 // y - A 4-bit value, the upper 4 bits of the low byte of the instru  
   const kk = inst & 0x00FF // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
 
+  // gonna split this into 'macro level opcodes' and 'micro level opcodes', as the instructions can be indexed by the 
+  // highest byte first, and then after that we can decide what to do...
+  const highByte = inst & 0xF000
   // We... could use a switch statement here, but that would be insane, right? How about a map instead?
   const opcodes = {
-    0x00E0: clearScreen,
-    0x00EE: returnFromSub
+    0x0000: clearAndReturnOpcodes,
+    0x1000: jump
   }
 
-  console.log(`inst: ${JSON.stringify(inst, null, 2)}`)
+  logger.log(inst)
+
+  opcodes[highByte](nnn)
+}
+
+function clearAndReturnOpcodes (nnn) {
+  
+}
+
+function jump (nnn) {
+
 }
 
 // Return from sub routine
 function returnFromSub () {
   // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
-  console.log('returnFromSub')
+  logger.log('returnFromSub')
 }
 
 function clearScreen () {
-  console.log('clearScreen')
+  logger.log('clearScreen')
 }
 
-module.exports = {
+export default {
   cycle,
   display,
   memory
