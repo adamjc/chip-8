@@ -40,6 +40,8 @@ function cycle () {
   
   // decode & execute (i'm too lazy to have them do separately, feels like a waste? We'll see...)
   decodeAndExecute(inst)
+
+  pc += 2
 }
 
 // aight we got a hex value now we need to look up what that means exactly
@@ -58,7 +60,11 @@ function decodeAndExecute(inst) {
   // We... could use a switch statement here, but that would be insane, right? How about a map instead?
   const opcodes = {
     0x0000: clearAndReturnOpcodes,
-    0x1000: jump
+    0x1000: jump,
+    0x2000: callSubroutine,
+    0x3000: skipIfVxkk,
+    0x4000: skipIfNotVxkk,
+    0x5000: skipIfVxVy
   }
 
   logger.log('inst', inst)
@@ -68,20 +74,61 @@ function decodeAndExecute(inst) {
 
 function clearAndReturnOpcodes (nnn) {
   logger.log('clearAndReturnOpcodes')
+  // is the last bit set? if it is, it's the 'RET' function, otherwise it's the 'CLS' function
+  if (nnn & 0x00F) {
+    returnFromSub() // 0x00EE
+  } else {
+    clearScreen() // 0x00E0
+  }
 }
 
+// 1nnn - JP addr
 function jump (nnn) {
   logger.log('jump')
+  // Jump to location nnn.  
 }
 
-// Return from sub routine
-function returnFromSub () {
-  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
-  logger.log('returnFromSub')
+// 2nnn - CALL addr
+function callSubroutine (nnn) {
+  logger.log('callSubroutine')
+  // Call subroutine at nnn.
+
+  // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
 }
 
+//  3xkk - SE Vx, byte
+function skipIfVxkk (nnn) {
+  logger.log('skipIfVxkk')
+  //   Skip next instruction if Vx = kk.
+
+  // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
+}
+
+// 4xkk - SNE Vx, byte
+function skipIfNotVxkk (nnn) {
+  logger.log('skipIfNotVxkk')
+  // Skip next instruction if Vx != kk.
+
+  // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
+}
+
+// 5xy0 - SE Vx, Vy
+function skipIfVxVy (nnn) {
+  logger.log('skipIfVxVy')
+  // Skip next instruction if Vx = Vy.
+
+  // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
+}
+
+// 00E0 - CLS
 function clearScreen () {
   logger.log('clearScreen')
+}
+
+// 00EE - RET
+function returnFromSub () {
+  logger.log('returnFromSub')
+  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
 }
 
 export default {
