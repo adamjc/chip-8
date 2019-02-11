@@ -4,6 +4,8 @@
   "description": "A CHIP-8 emulator/interpreter",
   "main": "main.js",
   "scripts": {
+    "build": "npx webpack",
+    "start": "node dist/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,11 +24,9 @@
     "url": "https://github.com/adamjc/chip-8/issues"
   },
   "homepage": "https://github.com/adamjc/chip-8#readme",
-  "dependencies": {
-    "npm": "^6.7.0",
-    "webpack": "^4.29.3"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.2.3",
+    "webpack": "^4.29.3"
   }
 }
