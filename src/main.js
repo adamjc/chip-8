@@ -1,4 +1,3 @@
-// Emulation loop
 import chip8 from './chip-8'
 
 chip8.memory[0x200] = 0x00
