@@ -1,3 +1,5 @@
+// Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
+
 const chip8 = (() => {
   // CHIP-8 Interpreter
 
@@ -8,7 +10,7 @@ const chip8 = (() => {
   let iRegister
 
   // It was originally designed to work on 4k computers, so lets give ourselves 4k of memory
-  // 0x0 -> 0x200 is used to store the system font (it was originally used to store the interpreter data, back when it was ran on 4k systems)
+  // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it was ran on 4k systems)
   // 0x200 -> 0xFFF is used to store the program data
   let memory = new Array(4096)
 
@@ -18,7 +20,7 @@ const chip8 = (() => {
   // When the sound timer hits 0, a monotone sound is played.
   let soundTimer
 
-  // And of course a program counter, starting at... 0x200 (where the program is loaded in!)
+  // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
   let pc = 0x200
 
   // A stack pointer, allows us to have function calls. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
@@ -34,9 +36,39 @@ const chip8 = (() => {
     const inst = (memory[pc] << 8) + memory[pc + 1]
     
     // decode
-
+    decode(inst)
 
     // execute
+  }
+
+  // aight we got a hex value now we need to look up what that means exactly
+  function decode(inst) {
+    // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values from the instruction
+    // We are using bitmasking to get these values. If you don't quite get what's happening here, look up https://en.wikipedia.org/wiki/Mask_(computing)
+    const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
+    const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
+    const x = inst & 0x0F00 // x - A 4-bit value, the lower 4 bits of the high byte of the instruction
+    const y = inst & 0xF000 // y - A 4-bit value, the upper 4 bits of the low byte of the instruction
+    const kk = inst & 0x00FF // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
+
+    // We... could use a switch statement here, but that would be insane, right? How about a map instead?
+    const opcodes = {
+      0x00E0: clearScreen,
+      0x00EE: returnFromSub
+    }
+
+    console.log(opcodes)
+    console.log(opcodes[inst])
+  }
+
+  // Return from sub routine
+  function returnFromSub () {
+    // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
+    console.log('returnFromSub')
+  }
+
+  function clearScreen () {
+    console.log('clearScreen')
   }
 
   return {
@@ -46,3 +78,7 @@ const chip8 = (() => {
   }
 })()
 
+chip8.memory[0x200] = 0x00
+chip8.memory[0x201] = 0xE0
+
+chip8.cycle()
