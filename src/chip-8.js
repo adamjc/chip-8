@@ -38,14 +38,12 @@ function cycle () {
   // fetching from memory takes twoooo cycles, cos it's an 8-bit bus, but each instruction is 16-bits long. Neat-o. VLIW are lame.
   const inst = (memory[pc] << 8) + memory[pc + 1]
   
-  // decode
-  decode(inst)
-
-  // execute
+  // decode & execute (i'm too lazy to have them do separately, feels like a waste? We'll see...)
+  decodeAndExecute(inst)
 }
 
 // aight we got a hex value now we need to look up what that means exactly
-function decode(inst) {
+function decodeAndExecute(inst) {
   // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values from the instruction
   // We are using bitmasking to get these values. If you don't quite get what's happening here, look up https://en.wikipedia.org/wiki/Mask_(computing)
   const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
@@ -63,17 +61,17 @@ function decode(inst) {
     0x1000: jump
   }
 
-  logger.log(inst)
+  logger.log('inst', inst)
 
   opcodes[highByte](nnn)
 }
 
 function clearAndReturnOpcodes (nnn) {
-  
+  logger.log('clearAndReturnOpcodes')
 }
 
 function jump (nnn) {
-
+  logger.log('jump')
 }
 
 // Return from sub routine
