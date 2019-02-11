@@ -1,0 +1,32 @@
+{
+  "name": "chip-8",
+  "version": "1.0.0",
+  "description": "A CHIP-8 emulator/interpreter",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adamjc/chip-8.git"
+  },
+  "keywords": [
+    "chip-8",
+    "chip8",
+    "interpreter",
+    "emulator"
+  ],
+  "author": "Adam Cook",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/adamjc/chip-8/issues"
+  },
+  "homepage": "https://github.com/adamjc/chip-8#readme",
+  "dependencies": {
+    "npm": "^6.7.0",
+    "webpack": "^4.29.3"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.2.3"
+  }
+}
