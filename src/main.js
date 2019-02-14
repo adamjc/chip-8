@@ -11,7 +11,7 @@ function loadMemory (file) {
 }
 
 function loop () {
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
     chip8.cycle()
     drawCanvas()
   }
@@ -27,6 +27,8 @@ function drawCanvas () {
     for (var y = 0; y < chip8.display[0].length; y += 1) {
       const pixel = chip8.display[x][y]
       context.fillStyle = pixel ? '#fff' : '#000'
+      context.strokeStyle = '#555'
+      context.strokeRect(x * 10, y * 10, 10, 10)
       context.fillRect(x * 10, y * 10, 10, 10)
     }
   }

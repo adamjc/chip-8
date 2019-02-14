@@ -47,8 +47,7 @@ function cycle () {
 // fetching from memory takes twoooo cycles, cos it's an 8-bit bus, 
 // but each instruction is 16-bits long. Neat-o. VLIW are lame.
 function fetch() {
-  iRegister = pc
-  const inst = (memory[iRegister] << 8) | memory[iRegister + 1]
+  const inst = (memory[pc] << 8) | memory[pc + 1]
   pc += 2
 
   return inst
@@ -176,8 +175,7 @@ function skipKey (nnn) {
 // for more information on XOR, and section 2.4, Display, for more information on the Chip-8 
 // screen and sprites.
 function draw (inst) {
-  logger.log('draw')
-
+  debugger
   let x = vRegisters[inst.x]
   let y = vRegisters[inst.y]
   vRegisters[0xF] = 0
@@ -189,28 +187,30 @@ function draw (inst) {
     iRegister += 1
 
     for (var j = 0; j < WORD_SIZE; j += 1) {
+      console.log(`drawing ${line.toString(2)} to ${x + j}, ${y + i}`)
       if (x + j > DISPLAY_WIDTH - 1) x = 0
 
-      const bitmask = 0b00000001 << j
-      const pixel = (line & bitmask) >> j
+      const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
+      const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
+      // debugger  
+      // console.log('---')
+      // console.log(inst)
+      // console.log(`j: ${j}`)
+      // console.log(`line: ${line.toString(2)}`)
+      // console.log(`bitmask: ${bitmask.toString(2)}`)
+      // console.log(`pixel: ${pixel.toString(2)}`)
+      // console.log('---')
 
-      console.log('---')
-      console.log(inst)
-      console.log(`j: ${j}`)
-      console.log(`line: ${line.toString(2)}`)
-      console.log(`bitmask: ${bitmask.toString(2)}`)
-      console.log(`pixel: ${pixel.toString(2)}`)
-      console.log('---')
-
-      console.log(x + j)
-      console.log(y + i)
+      // console.log(x + j)
+      // console.log(y + i)
       
       const currentPixel = display[x + j][y + i]
       const newPixel = currentPixel ^ pixel
+      console.log(`display[${x + j}][${y + i}] = ${newPixel}`)
       display[x + j][y + i] = newPixel
 
-      console.log(`${currentPixel} ^ ${pixel} = ${newPixel}`)
-      console.log(newPixel)
+      // console.log(`${currentPixel} ^ ${pixel} = ${newPixel}`)
+      // console.log(newPixel)
 
       vRegisters[0xF] = newPixel
     }
@@ -238,8 +238,8 @@ function jumpV0Offset (nnn) {
 
 // The value of register I is set to nnn.
 function loadIAddr (inst) {
-  logger.log('loadIAddr')
   iRegister = inst.nnn
+  console.log(`iRegister = ${inst.nnn.toString(16)}`)
 }
 
 function skipIfNotVxVy (nnn) {
@@ -255,8 +255,8 @@ function skipIfNotVxVy (nnn) {
 
 // The interpreter puts the value kk into register Vx.
 function loadVxVal (inst) {
-  logger.log('loadVxVal')
   vRegisters[inst.x] = inst.kk
+  console.log(`vRegister[${inst.x.toString(16)}] = ${inst.kk.toString(16)}`)
 }
 
 function addVxVal (nnn) {
