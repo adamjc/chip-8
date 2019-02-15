@@ -27,8 +27,10 @@ let soundTimer
 // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
 let pc = 0x200
 
-// A stack pointer, allows us to have function calls. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
-let sp = new Array(16)
+// A stack pointer, allows us to have function calls.
+let sp = 0
+// The stack. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
+let stack = new Array(16)
 
 // It utilises a 64x32 pixel display... we will get the chip-8 to write to these values, and in our `emulator` code, we will write these
 // values to a screen. Simple! (should be!).
@@ -187,30 +189,15 @@ function draw (inst) {
     iRegister += 1
 
     for (var j = 0; j < WORD_SIZE; j += 1) {
-      console.log(`drawing ${line.toString(2)} to ${x + j}, ${y + i}`)
       if (x + j > DISPLAY_WIDTH - 1) x = 0
 
       const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
       const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
-      // debugger  
-      // console.log('---')
-      // console.log(inst)
-      // console.log(`j: ${j}`)
-      // console.log(`line: ${line.toString(2)}`)
-      // console.log(`bitmask: ${bitmask.toString(2)}`)
-      // console.log(`pixel: ${pixel.toString(2)}`)
-      // console.log('---')
-
-      // console.log(x + j)
-      // console.log(y + i)
       
       const currentPixel = display[x + j][y + i]
       const newPixel = currentPixel ^ pixel
-      console.log(`display[${x + j}][${y + i}] = ${newPixel}`)
-      display[x + j][y + i] = newPixel
 
-      // console.log(`${currentPixel} ^ ${pixel} = ${newPixel}`)
-      // console.log(newPixel)
+      display[x + j][y + i] = newPixel
 
       vRegisters[0xF] = newPixel
     }
@@ -342,11 +329,19 @@ function jump (nnn) {
 }
 
 // 2nnn - CALL addr
-function callSubroutine (nnn) {
-  logger.log('callSubroutine')
-  // Call subroutine at nnn.
+// Call subroutine at nnn.
 
-  // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
+// The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
+function callSubroutine (inst) {
+  logger.log('callSubroutine')
+
+  sp += 1
+  stack[sp] = pc
+  pc = inst.nnn
+
+  logger.log('sp', sp)
+  logger.log(`stack[${sp}]`, stack[sp])
+  logger.log('pc', pc)
 }
 
 //  3xkk - SE Vx, byte
