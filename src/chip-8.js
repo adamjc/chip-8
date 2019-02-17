@@ -227,8 +227,11 @@ function addVxVal (inst) {
 }
 
 // 0x8000
-function settingFuncs (nnn) {
-  debugger
+function settingFuncs (inst) {
+  const microOpCodes = {
+    0x2: vXAnd
+  }
+
   // 8xy0 - LD Vx, Vy
   // Set Vx = Vy.
   
@@ -240,14 +243,11 @@ function settingFuncs (nnn) {
   // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. A bitwise OR compares the 
   // corrseponding bits from two values, and if either bit is 1, then the same bit in the result is also 1. Otherwise, 
   // it is 0.
-  
-  
-  // 8xy2 - AND Vx, Vy
-  // Set Vx = Vx AND Vy.
-  // Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. A bitwise AND compares the 
-  // corrseponding bits from two values, and if both bits are 1, then the same bit in the result is also 1. Otherwise, 
-  // it is 0.
-  
+
+  // 8xy2 - AND Vx, Vy -> Vx = Vx & Vy
+  function vXAnd () {
+    vRegisters[inst.x] = vRegisters[inst.x] & vRegisters[inst.y]
+  }
   
   // 8xy3 - XOR Vx, Vy
   // Set Vx = Vx XOR Vy.
@@ -280,6 +280,14 @@ function settingFuncs (nnn) {
   // 8xyE - SHL Vx {, Vy}
   // Set Vx = Vx SHL 1.
   // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
+
+  const func = microOpCodes[inst.n] 
+
+  if (!func) {
+    debugger
+  }
+  
+  func()
 }
 
 // 9xy0 - SNE Vx, Vy
