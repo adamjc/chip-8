@@ -381,8 +381,6 @@ function registerManipulation (inst) {
     }
   }
 
-  return microOpCodes[inst.kk]()
-  
   // Fx07 - LD Vx, DT
   // Set Vx = delay timer value.
   // The value of DT is placed into Vx.
@@ -406,6 +404,8 @@ function registerManipulation (inst) {
   // Fx55 - LD [I], Vx
   // Store registers V0 through Vx in memory starting at location I.
   // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
+
+  return microOpCodes[inst.kk]()
 }
 
 function notImplemented (nnn) {
