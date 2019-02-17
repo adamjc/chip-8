@@ -372,9 +372,7 @@ function registerManipulation (inst) {
     memory[iRegister] = dec % 10 // Gives us 4
   }
 
-  // Fx65 - LD Vx, [I]
-  // Read registers V0 through Vx from memory starting at location I.
-  // The interpreter reads values from memory starting at location I into registers V0 through Vx.
+  // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
   function loadVxI () {
     logger.log('loadVxI')
 
