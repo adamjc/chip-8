@@ -345,9 +345,15 @@ function registerManipulation (inst) {
   logger.log('registerManipulation')
 
   const microOpCodes = {
+    0x15: setDelayTimer,
     0x29: loadIVx,
     0x33: storeBcd,
     0x65: loadVxI
+  }
+
+  // Fx15 - LD DT, Vx -> DT is set equal to the value of Vx.
+  function setDelayTimer () {
+    delayTimer = vRegisters[inst.x]
   }
 
   // Fx29 - LD F, Vx
@@ -389,9 +395,7 @@ function registerManipulation (inst) {
   // Wait for a key press, store the value of the key in Vx.
   // All execution stops until a key is pressed, then the value of that key is stored in Vx.
 
-  // Fx15 - LD DT, Vx
-  // Set delay timer = Vx.
-  // DT is set equal to the value of Vx.
+  
 
   // Fx18 - LD ST, Vx
   // Set sound timer = Vx.
