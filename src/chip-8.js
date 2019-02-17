@@ -179,12 +179,12 @@ function callSubroutine (inst) {
   pc = inst.nnn
 }
 
-// 3xkk - SE Vx, byte
-// Skip next instruction if Vx = kk.
-// The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
-function skipIfVxkk (nnn) {
-  debugger
+// 3xkk - SE Vx, byte -> The interpreter compares register Vx to kk, and if they are equal, increments pc by 2.
+function skipIfVxkk (inst) {
   logger.log('skipIfVxkk')
+  if (vRegisters[inst.x] === inst.kk) {
+    pc += 2
+  }
 }
 
 // 4xkk - SNE Vx, byte
