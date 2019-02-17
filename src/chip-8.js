@@ -146,7 +146,12 @@ function clearAndReturnOpcodes (inst) {
   // 00E0 - CLS
   function clearScreen () {
     logger.log('clearScreen')
-    debugger
+
+    for (var x = 0; x < display.length; x += 1) {
+      for (var y = 0; y < display[x].length; y += 1) {
+        display[x][y] = 0
+      }
+    }
   }
 
   // 00EE - RET
