@@ -305,8 +305,9 @@ function jumpV0Offset (nnn) {
 // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are 
 // stored in Vx. See instruction 8xy2 for more information on AND.
 function setVxRandom (nnn) {
-  debugger
   logger.log('setVxRandom')
+  const random = Math.floor(Math.random(1) * 255)
+  vRegisters[inst.x] = random & inst.kk
 }
 
 // Dxyn - DRW Vx, Vy, nibble
