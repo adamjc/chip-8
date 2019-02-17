@@ -1,4 +1,4 @@
-import chip8 from './chip-8'
+import Chip8 from './chip-8'
 
 let interval
 let loopCount = 0
@@ -73,5 +73,69 @@ function readSingleFile (event) {
   reader.onload = file => loadMemory(file.target.result)  
   reader.readAsArrayBuffer(filename)
 }
+
+let keyboard = (function () {
+  const keyMap = {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "q",
+    "5": "w",
+    "6": "e",
+    "7": "a",
+    "8": "s",
+    "9": "d",
+    "A": "z",
+    "0": "x",
+    "B": "c",
+    "C": "4",
+    "D": "r",
+    "E": "f",
+    "F": "v"
+  }
+
+  const keys = {
+    "1": false,
+    "2": false,
+    "3": false,
+    "q": false,
+    "w": false,
+    "e": false,
+    "a": false,
+    "s": false,
+    "d": false,
+    "z": false,
+    "x": false,
+    "c": false,
+    "4": false,
+    "r": false,
+    "f": false,
+    "v": false
+  }
+
+  function set (keyPress, value) {
+    keys[keyPress] = value
+  }
+
+  function get (hexKey) {
+    return keys[keyMap[hexKey.toString()]]
+  }
+
+  return {
+    keyMap,
+    set,
+    get
+  }
+})()
+
+const chip8 = Chip8(keyboard)
+
+window.addEventListener('keydown', ({ key }) => {
+  keyboard.set(key, true)
+})
+
+window.addEventListener('keyup', ({ key }) => {
+  keyboard.set(key, false)
+})
 
 document.getElementById('file-input').addEventListener('change', readSingleFile, false)
