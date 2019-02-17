@@ -363,12 +363,7 @@ export default (keyboard) => {
     }
   }
 
-
-
-  // ExA1 - SKNP Vx
-  // Skip next instruction if key with the value of Vx is not pressed.
-  // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is 
-  // increased by 2.
+  // 0xE000
   function skipKey (inst) {
     logger.log('skipKey')
 
@@ -381,6 +376,10 @@ export default (keyboard) => {
       return
     }
 
+    // ExA1 - SKNP Vx
+    // Skip next instruction if key with the value of Vx is not pressed.
+    // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is 
+    // increased by 2.
     if (inst.kk == 0xA1) {
       debugger
       return
@@ -429,8 +428,8 @@ export default (keyboard) => {
 
       // For a given value, say 234
       memory[iRegister] = Math.floor(dec / 100) // Gives us 2
-      memory[iRegister] = Math.floor(dec / 10) % 10 // Gives us 3
-      memory[iRegister] = dec % 10 // Gives us 4
+      memory[iRegister + 1] = Math.floor(dec / 10) % 10 // Gives us 3
+      memory[iRegister + 2] = dec % 10 // Gives us 4
     }
 
     // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
