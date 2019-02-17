@@ -282,13 +282,12 @@ export default (keyboard) => {
     // Set Vx = Vx SHL 1.
     // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
 
-    const func = microOpCodes[inst.n] 
 
-    if (!func) {
+    if (!microOpCodes[inst.n]) {
       debugger
     }
     
-    func()
+    microOpCodes[inst.n] ()
   }
 
   // 9xy0 - SNE Vx, Vy
@@ -458,6 +457,11 @@ export default (keyboard) => {
     // Fx55 - LD [I], Vx
     // Store registers V0 through Vx in memory starting at location I.
     // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
+
+    if (!microOpCodes[inst.kk]) {
+      debugger
+      return
+    }
 
     return microOpCodes[inst.kk]()
   }
