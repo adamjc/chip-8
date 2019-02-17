@@ -18,6 +18,28 @@ let iRegister
 // 0x200 -> 0xFFF is used to store the program data
 let memory = new Array(4096)
 
+// Copied from CowGood's font set
+const fonts = [
+  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+  0x20, 0x60, 0x20, 0x20, 0x70, // 1
+  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+  0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+  0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+  0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+  0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+  0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+  0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+  0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+  0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+  0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+  0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+  0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+]
+
+memory.splice(0, fonts.length, ...fonts)
+
 // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz, once at 0 they stay there.
 let delayTimer
 
@@ -59,6 +81,7 @@ function fetch() {
 function decodeAndExecute(inst) {
   // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values from the instruction
   // We are using bitmasking to get these values. If you don't quite get what's happening here, look up https://en.wikipedia.org/wiki/Mask_(computing)
+  logger.log('-----')
   logger.log('inst', inst)
   const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
   const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction  
@@ -89,14 +112,55 @@ function decodeAndExecute(inst) {
     0xF000: registerManipulation
   }
 
-  logger.log('inst', inst)
   const macroOpcode = macroOpcodes[highByte] ? macroOpcodes[highByte] : notImplemented  
 
   macroOpcode({ nnn, n, x, y, kk }) // Yes, very ineffecient right now
 }
 
-function registerManipulation (nnn) {
-  logger.log('misc')
+// 0xF000
+function registerManipulation (inst) {
+  logger.log('registerManipulation')
+
+  const microOpCodes = {
+    0x29: loadIVx,
+    0x33: storeBcd,
+    0x65: loadVxI
+  }
+
+  // Fx29 - LD F, Vx
+  // Set I = location of sprite for digit Vx.
+  // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
+  function loadIVx () {
+    logger.log('loadIVx')
+    iRegister = vRegisters[inst.x] * 5
+  }
+
+  // Fx33 - LD B, Vx
+  // Store BCD representation of Vx in memory locations I, I+1, and I+2.
+  // The interpreter takes the decimal value of Vx, and places the hundreds digit in 
+  // memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
+  function storeBcd () {
+    logger.log('storeBcd')
+    const dec = vRegisters[inst.x]
+
+    // For a given value, say 234
+    memory[iRegister] = Math.floor(dec / 100) // Gives us 2
+    memory[iRegister] = Math.floor(dec / 10) % 10 // Gives us 3
+    memory[iRegister] = dec % 10 // Gives us 4
+  }
+
+  // Fx65 - LD Vx, [I]
+  // Read registers V0 through Vx from memory starting at location I.
+  // The interpreter reads values from memory starting at location I into registers V0 through Vx.
+  function loadVxI () {
+    logger.log('loadVxI')
+
+    for (let i = 0; i <= inst.x ; i++) {
+      vRegisters[i] = memory[iRegister + i]
+    }
+  }
+
+  return microOpCodes[inst.kk]()
   // Fx07 - LD Vx, DT
   // Set Vx = delay timer value.
 
@@ -127,28 +191,10 @@ function registerManipulation (nnn) {
   // The values of I and Vx are added, and the results are stored in I.
 
 
-  // Fx29 - LD F, Vx
-  // Set I = location of sprite for digit Vx.
-
-  // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
-
-
-  // Fx33 - LD B, Vx
-  // Store BCD representation of Vx in memory locations I, I+1, and I+2.
-
-  // The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
-
-
   // Fx55 - LD [I], Vx
   // Store registers V0 through Vx in memory starting at location I.
 
   // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
-
-
-  // Fx65 - LD Vx, [I]
-  // Read registers V0 through Vx from memory starting at location I.
-
-  // The interpreter reads values from memory starting at location I into registers V0 through Vx.
 }
 
 function skipKey (nnn) {
@@ -177,7 +223,6 @@ function skipKey (nnn) {
 // for more information on XOR, and section 2.4, Display, for more information on the Chip-8 
 // screen and sprites.
 function draw (inst) {
-  debugger
   let x = vRegisters[inst.x]
   let y = vRegisters[inst.y]
   vRegisters[0xF] = 0
@@ -220,18 +265,19 @@ function jumpV0Offset (nnn) {
   // The program counter is set to nnn plus the value of V0.
 }
 
+// 0xA000
 // Annn - LD I, addr
 // Set I = nnn.
-
 // The value of register I is set to nnn.
 function loadIAddr (inst) {
   iRegister = inst.nnn
   console.log(`iRegister = ${inst.nnn.toString(16)}`)
 }
 
+// 9xy0 - SNE Vx, Vy
 function skipIfNotVxVy (nnn) {
   logger.log('skipIfNotVxVy')
-  // 9xy0 - SNE Vx, Vy
+  
   // Skip next instruction if Vx != Vy.
 
   // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
@@ -239,20 +285,22 @@ function skipIfNotVxVy (nnn) {
 
 // 6xkk - LD Vx, byte
 // Set Vx = kk.
-
 // The interpreter puts the value kk into register Vx.
 function loadVxVal (inst) {
   vRegisters[inst.x] = inst.kk
   console.log(`vRegister[${inst.x.toString(16)}] = ${inst.kk.toString(16)}`)
 }
 
-function addVxVal (nnn) {
+// 0x7000
+// Set Vx = Vx + kk.
+// Adds the value kk to the value of register Vx, then stores the result in Vx. 
+function addVxVal (inst) {
   logger.log('addVxVal')
-  // Set Vx = Vx + kk.
-
-  // Adds the value kk to the value of register Vx, then stores the result in Vx. 
+  vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
+  logger.log(`vRegisters[${inst.x}]`, vRegisters[inst.x])
 }
 
+// 0x8000
 function settingFuncs (nnn) {
   // 8xy0 - LD Vx, Vy
   // Set Vx = Vy.
@@ -312,13 +360,27 @@ function notImplemented (nnn) {
   logger.log('function not implemented')
 }
 
-function clearAndReturnOpcodes (nnn) {
+function clearAndReturnOpcodes (inst) {
   logger.log('clearAndReturnOpcodes')
   // is the last bit set? if it is, it's the 'RET' function, otherwise it's the 'CLS' function
-  if (nnn & 0x00F) {
+  if (inst.nnn & 0x00F) {
     returnFromSub() // 0x00EE
   } else {
     clearScreen() // 0x00E0
+  }
+
+  // 00E0 - CLS
+  function clearScreen () {
+    logger.log('clearScreen') 
+  }
+
+  // 00EE - RET
+  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
+  function returnFromSub () {
+    logger.log('returnFromSub')
+    
+    pc = stack[sp]
+    sp -= 1
   }
 }
 
@@ -366,17 +428,6 @@ function skipIfVxVy (nnn) {
   // Skip next instruction if Vx = Vy.
 
   // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
-}
-
-// 00E0 - CLS
-function clearScreen () {
-  logger.log('clearScreen')
-}
-
-// 00EE - RET
-function returnFromSub () {
-  logger.log('returnFromSub')
-  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
 }
 
 export default {
