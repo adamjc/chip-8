@@ -293,9 +293,11 @@ function settingFuncs (inst) {
 // 9xy0 - SNE Vx, Vy
 // Skip next instruction if Vx != Vy.
 // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
-function skipIfNotVxVy (nnn) {
-  debugger
+function skipIfNotVxVy (inst) {
   logger.log('skipIfNotVxVy')
+  if (vRegisters[inst.x] !== vRegisters[inst.y]) {
+    pc += 2
+  }
 }
 
 // 0xA000
