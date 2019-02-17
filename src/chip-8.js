@@ -376,11 +376,13 @@ function clearAndReturnOpcodes (inst) {
 
   // 00EE - RET
   // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
+  // We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an array) first element
+  // is never set (stack[0] will never be used)
   function returnFromSub () {
     logger.log('returnFromSub')
     
-    pc = stack[sp]
     sp -= 1
+    pc = stack[sp]
   }
 }
 
@@ -392,13 +394,13 @@ function jump (nnn) {
 
 // 2nnn - CALL addr
 // Call subroutine at nnn.
-
 // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
+// We're doing this the other way around (set, then increment), see 00EE for more info.
 function callSubroutine (inst) {
   logger.log('callSubroutine')
 
-  sp += 1
   stack[sp] = pc
+  sp += 1
   pc = inst.nnn
 
   logger.log('sp', sp)
