@@ -345,10 +345,16 @@ function registerManipulation (inst) {
   logger.log('registerManipulation')
 
   const microOpCodes = {
+    0x07: loadDelayTimer,
     0x15: setDelayTimer,
     0x29: loadIVx,
     0x33: storeBcd,
     0x65: loadVxI
+  }
+
+  // Fx07 - LD Vx, DT -> The value of DT is placed into Vx.
+  function loadDelayTimer () {
+    vRegisters[inst.x] = delayTimer
   }
 
   // Fx15 - LD DT, Vx -> DT is set equal to the value of Vx.
@@ -386,10 +392,6 @@ function registerManipulation (inst) {
       vRegisters[i] = memory[iRegister + i]
     }
   }
-
-  // Fx07 - LD Vx, DT
-  // Set Vx = delay timer value.
-  // The value of DT is placed into Vx.
 
   // Fx0A - LD Vx, K
   // Wait for a key press, store the value of the key in Vx.
