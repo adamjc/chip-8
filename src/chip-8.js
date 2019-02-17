@@ -161,11 +161,10 @@ function clearAndReturnOpcodes (inst) {
   }
 }
 
-// 1nnn - JP addr
+// 1nnn - JP addr -> Sets pc to nnn
 function jump (nnn) {
   logger.log('jump')
-  debugger
-  // Jump to location nnn.  
+  pc = inst.nnn
 }
 
 // 2nnn - CALL addr
