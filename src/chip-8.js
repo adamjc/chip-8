@@ -195,9 +195,11 @@ function skipIfVxkk (inst) {
 // 4xkk - SNE Vx, byte
 // Skip next instruction if Vx != kk.
 // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
-function skipIfNotVxkk (nnn) {
-  debugger
+function skipIfNotVxkk (inst) {
   logger.log('skipIfNotVxkk')
+  if (vRegisters[inst.x] !== inst.kk) {
+    pc += 2
+  }
 }
 
 // 5xy0 - SE Vx, Vy
