@@ -168,7 +168,7 @@ export default (keyboard) => {
   }
 
   // 1nnn - JP addr -> Sets pc to nnn
-  function jump (nnn) {
+  function jump (inst) {
     logger.log('jump')
     pc = inst.nnn
   }
