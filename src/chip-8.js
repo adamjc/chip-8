@@ -41,10 +41,10 @@ const fonts = [
 memory.splice(0, fonts.length, ...fonts)
 
 // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz, once at 0 they stay there
-let delayTimer
+let delayTimer = 0
 
 // When the sound timer hits 0, a monotone sound is played.
-let soundTimer
+let soundTimer = 0
 
 // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
 let pc = 0x200
@@ -61,7 +61,22 @@ const DISPLAY_HEIGHT = 32
 let display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
 
 // does a cpu cycle innit.
+let times = []
+let lastTimeDecremented = 0
 function cycle () {
+  const currentTime = Date.now()
+  const dT = currentTime - lastTimeDecremented
+  const timerRefreshRate = 1000 / 60
+  if (dT >= timerRefreshRate) {
+    // decrement delayTimer at a rate of 60Hz
+    if (delayTimer > 0) {
+      delayTimer -= 1
+    }
+
+    lastTimeDecremented = currentTime
+  }
+
+  times.push(Date.now())
   const inst = fetch()
   
   // decode & execute (i'm too lazy to have them do separately, feels like a waste? We'll see...)
@@ -130,7 +145,8 @@ function clearAndReturnOpcodes (inst) {
 
   // 00E0 - CLS
   function clearScreen () {
-    logger.log('clearScreen') 
+    logger.log('clearScreen')
+    debugger
   }
 
   // 00EE - RET
@@ -148,6 +164,7 @@ function clearAndReturnOpcodes (inst) {
 // 1nnn - JP addr
 function jump (nnn) {
   logger.log('jump')
+  debugger
   // Jump to location nnn.  
 }
 
@@ -161,16 +178,13 @@ function callSubroutine (inst) {
   stack[sp] = pc
   sp += 1
   pc = inst.nnn
-
-  logger.log('sp', sp)
-  logger.log(`stack[${sp}]`, stack[sp])
-  logger.log('pc', pc)
 }
 
 // 3xkk - SE Vx, byte
 // Skip next instruction if Vx = kk.
 // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
 function skipIfVxkk (nnn) {
+  debugger
   logger.log('skipIfVxkk')
 }
 
@@ -178,6 +192,7 @@ function skipIfVxkk (nnn) {
 // Skip next instruction if Vx != kk.
 // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
 function skipIfNotVxkk (nnn) {
+  debugger
   logger.log('skipIfNotVxkk')
 }
 
@@ -185,6 +200,7 @@ function skipIfNotVxkk (nnn) {
 // Skip next instruction if Vx = Vy.
 // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
 function skipIfVxVy (nnn) {
+  debugger
   logger.log('skipIfVxVy')
 }
 
@@ -192,8 +208,8 @@ function skipIfVxVy (nnn) {
 // Set Vx = kk.
 // The interpreter puts the value kk into register Vx.
 function loadVxVal (inst) {
+  logger.log('loadVxVal')
   vRegisters[inst.x] = inst.kk
-  console.log(`vRegister[${inst.x.toString(16)}] = ${inst.kk.toString(16)}`)
 }
 
 // 0x7000
@@ -202,11 +218,11 @@ function loadVxVal (inst) {
 function addVxVal (inst) {
   logger.log('addVxVal')
   vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
-  logger.log(`vRegisters[${inst.x}]`, vRegisters[inst.x])
 }
 
 // 0x8000
 function settingFuncs (nnn) {
+  debugger
   // 8xy0 - LD Vx, Vy
   // Set Vx = Vy.
   
@@ -264,6 +280,7 @@ function settingFuncs (nnn) {
 // Skip next instruction if Vx != Vy.
 // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
 function skipIfNotVxVy (nnn) {
+  debugger
   logger.log('skipIfNotVxVy')
 }
 
@@ -272,14 +289,15 @@ function skipIfNotVxVy (nnn) {
 // Set I = nnn.
 // The value of register I is set to nnn.
 function loadIAddr (inst) {
+  logger.log('loadIAddr')
   iRegister = inst.nnn
-  console.log(`iRegister = ${inst.nnn.toString(16)}`)
 }
 
 // Bnnn - JP V0, addr
 // Jump to location nnn + V0.
 // The program counter is set to nnn plus the value of V0.
 function jumpV0Offset (nnn) {
+  debugger
   logger.log('jumpV0Offset')
 }
 
@@ -288,6 +306,7 @@ function jumpV0Offset (nnn) {
 // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are 
 // stored in Vx. See instruction 8xy2 for more information on AND.
 function setVxRandom (nnn) {
+  debugger
   logger.log('setVxRandom')
 }
 
@@ -337,6 +356,7 @@ function draw (inst) {
 // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is 
 // increased by 2.
 function skipKey (nnn) {
+  debugger
   logger.log('skipKey')
 }
 
@@ -421,5 +441,6 @@ function notImplemented (nnn) {
 export default {
   cycle,
   display,
-  memory
+  memory,
+  times
 }

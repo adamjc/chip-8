@@ -21,7 +21,7 @@ function loop () {
   }
 
   chip8.cycle()
-  drawCanvas()
+  setTimeout(drawCanvas, 0)
   loopCount += 1
 }
 
