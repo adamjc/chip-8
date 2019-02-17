@@ -117,6 +117,238 @@ function decodeAndExecute(inst) {
   macroOpcode({ nnn, n, x, y, kk }) // Yes, very ineffecient right now
 }
 
+// 0x0000
+function clearAndReturnOpcodes (inst) {
+  logger.log('clearAndReturnOpcodes')
+  // is the last bit set? if it is, it's the 'RET' function, otherwise it's the 'CLS' function
+  if (inst.nnn & 0x00F) {
+    returnFromSub() // 0x00EE
+  } else {
+    clearScreen() // 0x00E0
+  }
+
+  // 00E0 - CLS
+  function clearScreen () {
+    logger.log('clearScreen') 
+  }
+
+  // 00EE - RET
+  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
+  // We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an array) first element
+  // is never set (stack[0] will never be used)
+  function returnFromSub () {
+    logger.log('returnFromSub')
+    
+    sp -= 1
+    pc = stack[sp]
+  }
+}
+
+// 1nnn - JP addr
+function jump (nnn) {
+  logger.log('jump')
+  // Jump to location nnn.  
+}
+
+// 2nnn - CALL addr
+// Call subroutine at nnn.
+// The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
+// We're doing this the other way around (set, then increment), see 00EE for more info.
+function callSubroutine (inst) {
+  logger.log('callSubroutine')
+
+  stack[sp] = pc
+  sp += 1
+  pc = inst.nnn
+
+  logger.log('sp', sp)
+  logger.log(`stack[${sp}]`, stack[sp])
+  logger.log('pc', pc)
+}
+
+//  3xkk - SE Vx, byte
+function skipIfVxkk (nnn) {
+  logger.log('skipIfVxkk')
+  //   Skip next instruction if Vx = kk.
+
+  // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
+}
+
+// 4xkk - SNE Vx, byte
+function skipIfNotVxkk (nnn) {
+  logger.log('skipIfNotVxkk')
+  // Skip next instruction if Vx != kk.
+
+  // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
+}
+
+// 5xy0 - SE Vx, Vy
+function skipIfVxVy (nnn) {
+  logger.log('skipIfVxVy')
+  // Skip next instruction if Vx = Vy.
+
+  // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
+}
+
+// 6xkk - LD Vx, byte
+// Set Vx = kk.
+// The interpreter puts the value kk into register Vx.
+function loadVxVal (inst) {
+  vRegisters[inst.x] = inst.kk
+  console.log(`vRegister[${inst.x.toString(16)}] = ${inst.kk.toString(16)}`)
+}
+
+// 0x7000
+// Set Vx = Vx + kk.
+// Adds the value kk to the value of register Vx, then stores the result in Vx. 
+function addVxVal (inst) {
+  logger.log('addVxVal')
+  vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
+  logger.log(`vRegisters[${inst.x}]`, vRegisters[inst.x])
+}
+
+// 0x8000
+function settingFuncs (nnn) {
+  // 8xy0 - LD Vx, Vy
+  // Set Vx = Vy.
+  
+  // Stores the value of register Vy in register Vx.
+  
+  
+  // 8xy1 - OR Vx, Vy
+  // Set Vx = Vx OR Vy.
+  
+  // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. A bitwise OR compares the corrseponding bits from two values, and if either bit is 1, then the same bit in the result is also 1. Otherwise, it is 0.
+  
+  
+  // 8xy2 - AND Vx, Vy
+  // Set Vx = Vx AND Vy.
+  
+  // Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. A bitwise AND compares the corrseponding bits from two values, and if both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
+  
+  
+  // 8xy3 - XOR Vx, Vy
+  // Set Vx = Vx XOR Vy.
+  
+  // Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx. An exclusive OR compares the corrseponding bits from two values, and if the bits are not both the same, then the corresponding bit in the result is set to 1. Otherwise, it is 0.
+  
+  
+  // 8xy4 - ADD Vx, Vy
+  // Set Vx = Vx + Vy, set VF = carry.
+  
+  // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
+  
+  
+  // 8xy5 - SUB Vx, Vy
+  // Set Vx = Vx - Vy, set VF = NOT borrow.
+  
+  // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
+  
+  
+  // 8xy6 - SHR Vx {, Vy}
+  // Set Vx = Vx SHR 1.
+  
+  // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
+  
+  
+  // 8xy7 - SUBN Vx, Vy
+  // Set Vx = Vy - Vx, set VF = NOT borrow.
+  
+  // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
+  
+  
+  // 8xyE - SHL Vx {, Vy}
+  // Set Vx = Vx SHL 1.
+  
+  // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
+}
+
+// 9xy0 - SNE Vx, Vy
+function skipIfNotVxVy (nnn) {
+  logger.log('skipIfNotVxVy')
+  
+  // Skip next instruction if Vx != Vy.
+
+  // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
+}
+
+// 0xA000
+// Annn - LD I, addr
+// Set I = nnn.
+// The value of register I is set to nnn.
+function loadIAddr (inst) {
+  iRegister = inst.nnn
+  console.log(`iRegister = ${inst.nnn.toString(16)}`)
+}
+
+// Bnnn - JP V0, addr
+// Jump to location nnn + V0.
+
+// The program counter is set to nnn plus the value of V0.
+function jumpV0Offset (nnn) {
+  logger.log('jumpV0Offset')
+}
+
+// Cxkk - RND Vx, byte
+// Set Vx = random byte AND kk.
+
+// The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are stored in Vx. See instruction 8xy2 for more information on AND.
+function setVxRandom (nnn) {
+  logger.log('setVxRandom')
+}
+
+// Dxyn - DRW Vx, Vy, nibble
+// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+
+// The interpreter reads n bytes from memory, starting at the address stored in I. 
+// These bytes are then displayed as sprites on screen at coordinates (Vx, Vy). 
+// Sprites are XORed onto the existing screen. 
+// If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. 
+// If the sprite is positioned so part of it is outside the coordinates of the display, 
+// it wraps around to the opposite side of the screen. See instruction 8xy3 
+// for more information on XOR, and section 2.4, Display, for more information on the Chip-8 
+// screen and sprites.
+function draw (inst) {
+  let x = vRegisters[inst.x]
+  let y = vRegisters[inst.y]
+  vRegisters[0xF] = 0
+
+  for (var i = 0; i < inst.n; i += 1) {
+    if (y + i > DISPLAY_HEIGHT - 1) y = 0
+
+    const line = memory[iRegister]
+    iRegister += 1
+
+    for (var j = 0; j < WORD_SIZE; j += 1) {
+      if (x + j > DISPLAY_WIDTH - 1) x = 0
+
+      const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
+      const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
+      
+      const currentPixel = display[x + j][y + i]
+      const newPixel = currentPixel ^ pixel
+
+      display[x + j][y + i] = newPixel
+
+      vRegisters[0xF] = newPixel
+    }
+  }
+}
+
+// Ex9E - SKP Vx
+// Skip next instruction if key with the value of Vx is pressed.
+
+// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
+
+
+// ExA1 - SKNP Vx
+// Skip next instruction if key with the value of Vx is not pressed.
+
+// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+function skipKey (nnn) {
+  logger.log('skipKey')
+}
+
 // 0xF000
 function registerManipulation (inst) {
   logger.log('registerManipulation')
@@ -197,239 +429,8 @@ function registerManipulation (inst) {
   // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
 }
 
-function skipKey (nnn) {
-  logger.log('skipKey')
-  // Ex9E - SKP Vx
-  // Skip next instruction if key with the value of Vx is pressed.
-  
-  // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
-  
-  
-  // ExA1 - SKNP Vx
-  // Skip next instruction if key with the value of Vx is not pressed.
-  
-  // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
-}
-
-// Dxyn - DRW Vx, Vy, nibble
-// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-
-// The interpreter reads n bytes from memory, starting at the address stored in I. 
-// These bytes are then displayed as sprites on screen at coordinates (Vx, Vy). 
-// Sprites are XORed onto the existing screen. 
-// If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. 
-// If the sprite is positioned so part of it is outside the coordinates of the display, 
-// it wraps around to the opposite side of the screen. See instruction 8xy3 
-// for more information on XOR, and section 2.4, Display, for more information on the Chip-8 
-// screen and sprites.
-function draw (inst) {
-  let x = vRegisters[inst.x]
-  let y = vRegisters[inst.y]
-  vRegisters[0xF] = 0
-
-  for (var i = 0; i < inst.n; i += 1) {
-    if (y + i > DISPLAY_HEIGHT - 1) y = 0
-
-    const line = memory[iRegister]
-    iRegister += 1
-
-    for (var j = 0; j < WORD_SIZE; j += 1) {
-      if (x + j > DISPLAY_WIDTH - 1) x = 0
-
-      const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
-      const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
-      
-      const currentPixel = display[x + j][y + i]
-      const newPixel = currentPixel ^ pixel
-
-      display[x + j][y + i] = newPixel
-
-      vRegisters[0xF] = newPixel
-    }
-  }
-}
-
-function setVxRandom (nnn) {
-  logger.log('setVxRandom')
-  // Cxkk - RND Vx, byte
-  // Set Vx = random byte AND kk.
-  
-  // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are stored in Vx. See instruction 8xy2 for more information on AND.
-}
-
-function jumpV0Offset (nnn) {
-  logger.log('jumpV0Offset')
-  // Bnnn - JP V0, addr
-  // Jump to location nnn + V0.
-
-  // The program counter is set to nnn plus the value of V0.
-}
-
-// 0xA000
-// Annn - LD I, addr
-// Set I = nnn.
-// The value of register I is set to nnn.
-function loadIAddr (inst) {
-  iRegister = inst.nnn
-  console.log(`iRegister = ${inst.nnn.toString(16)}`)
-}
-
-// 9xy0 - SNE Vx, Vy
-function skipIfNotVxVy (nnn) {
-  logger.log('skipIfNotVxVy')
-  
-  // Skip next instruction if Vx != Vy.
-
-  // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
-}
-
-// 6xkk - LD Vx, byte
-// Set Vx = kk.
-// The interpreter puts the value kk into register Vx.
-function loadVxVal (inst) {
-  vRegisters[inst.x] = inst.kk
-  console.log(`vRegister[${inst.x.toString(16)}] = ${inst.kk.toString(16)}`)
-}
-
-// 0x7000
-// Set Vx = Vx + kk.
-// Adds the value kk to the value of register Vx, then stores the result in Vx. 
-function addVxVal (inst) {
-  logger.log('addVxVal')
-  vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
-  logger.log(`vRegisters[${inst.x}]`, vRegisters[inst.x])
-}
-
-// 0x8000
-function settingFuncs (nnn) {
-  // 8xy0 - LD Vx, Vy
-  // Set Vx = Vy.
-  
-  // Stores the value of register Vy in register Vx.
-  
-  
-  // 8xy1 - OR Vx, Vy
-  // Set Vx = Vx OR Vy.
-  
-  // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. A bitwise OR compares the corrseponding bits from two values, and if either bit is 1, then the same bit in the result is also 1. Otherwise, it is 0.
-  
-  
-  // 8xy2 - AND Vx, Vy
-  // Set Vx = Vx AND Vy.
-  
-  // Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. A bitwise AND compares the corrseponding bits from two values, and if both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
-  
-  
-  // 8xy3 - XOR Vx, Vy
-  // Set Vx = Vx XOR Vy.
-  
-  // Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx. An exclusive OR compares the corrseponding bits from two values, and if the bits are not both the same, then the corresponding bit in the result is set to 1. Otherwise, it is 0.
-  
-  
-  // 8xy4 - ADD Vx, Vy
-  // Set Vx = Vx + Vy, set VF = carry.
-  
-  // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
-  
-  
-  // 8xy5 - SUB Vx, Vy
-  // Set Vx = Vx - Vy, set VF = NOT borrow.
-  
-  // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
-  
-  
-  // 8xy6 - SHR Vx {, Vy}
-  // Set Vx = Vx SHR 1.
-  
-  // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
-  
-  
-  // 8xy7 - SUBN Vx, Vy
-  // Set Vx = Vy - Vx, set VF = NOT borrow.
-  
-  // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
-  
-  
-  // 8xyE - SHL Vx {, Vy}
-  // Set Vx = Vx SHL 1.
-  
-  // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
-}
-
 function notImplemented (nnn) {
   logger.log('function not implemented')
-}
-
-function clearAndReturnOpcodes (inst) {
-  logger.log('clearAndReturnOpcodes')
-  // is the last bit set? if it is, it's the 'RET' function, otherwise it's the 'CLS' function
-  if (inst.nnn & 0x00F) {
-    returnFromSub() // 0x00EE
-  } else {
-    clearScreen() // 0x00E0
-  }
-
-  // 00E0 - CLS
-  function clearScreen () {
-    logger.log('clearScreen') 
-  }
-
-  // 00EE - RET
-  // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
-  // We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an array) first element
-  // is never set (stack[0] will never be used)
-  function returnFromSub () {
-    logger.log('returnFromSub')
-    
-    sp -= 1
-    pc = stack[sp]
-  }
-}
-
-// 1nnn - JP addr
-function jump (nnn) {
-  logger.log('jump')
-  // Jump to location nnn.  
-}
-
-// 2nnn - CALL addr
-// Call subroutine at nnn.
-// The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
-// We're doing this the other way around (set, then increment), see 00EE for more info.
-function callSubroutine (inst) {
-  logger.log('callSubroutine')
-
-  stack[sp] = pc
-  sp += 1
-  pc = inst.nnn
-
-  logger.log('sp', sp)
-  logger.log(`stack[${sp}]`, stack[sp])
-  logger.log('pc', pc)
-}
-
-//  3xkk - SE Vx, byte
-function skipIfVxkk (nnn) {
-  logger.log('skipIfVxkk')
-  //   Skip next instruction if Vx = kk.
-
-  // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
-}
-
-// 4xkk - SNE Vx, byte
-function skipIfNotVxkk (nnn) {
-  logger.log('skipIfNotVxkk')
-  // Skip next instruction if Vx != kk.
-
-  // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
-}
-
-// 5xy0 - SE Vx, Vy
-function skipIfVxVy (nnn) {
-  logger.log('skipIfVxVy')
-  // Skip next instruction if Vx = Vy.
-
-  // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
 }
 
 export default {
