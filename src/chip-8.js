@@ -1,10 +1,6 @@
 // Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
 
-import loggerFactory from './logger' // laugh it up, Joel
-
-export default (keyboard, debug) => {
-  const logger = new loggerFactory(debug)
-
+export default (keyboard, render) => {
   // CHIP-8 Interpreter
   const WORD_SIZE = 8
 
@@ -61,8 +57,9 @@ export default (keyboard, debug) => {
   const DISPLAY_HEIGHT = 32
   let display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
 
+  let drawFlag = true
+
   // does a cpu cycle innit.
-  let times = []
   let lastTimeDecremented = 0
   function cycle () {
     const currentTime = Date.now()
@@ -77,7 +74,6 @@ export default (keyboard, debug) => {
       lastTimeDecremented = currentTime
     }
 
-    times.push(Date.now())
     const inst = fetch()
     
     // decode & execute (i'm too lazy to have them do separately, feels like a waste? We'll see...)
@@ -98,8 +94,6 @@ export default (keyboard, debug) => {
     // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values 
     // from the instruction We are using bitmasking to get these values. If you don't quite get what's happening here, 
     // look up https://en.wikipedia.org/wiki/Mask_(computing)
-    logger.log('-----')
-    logger.log('inst', inst)
     const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
     const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction  
     const x = (inst & 0x0F00) >> 8 // x - A 4-bit value, the lower 4 bits of the high byte of the instructionction
@@ -136,7 +130,6 @@ export default (keyboard, debug) => {
 
   // 0x0000
   function clearAndReturnOpcodes (inst) {
-    logger.log('clearAndReturnOpcodes')
     // is the last bit set? if it is, it's the 'RET' function, otherwise it's the 'CLS' function
     if (inst.nnn & 0x00F) {
       returnFromSub() // 0x00EE
@@ -146,9 +139,6 @@ export default (keyboard, debug) => {
 
     // 00E0 - CLS
     function clearScreen () {
-      debugger
-      logger.log('clearScreen')
-
       for (var x = 0; x < display.length; x += 1) {
         for (var y = 0; y < display[x].length; y += 1) {
           display[x][y] = 0
@@ -161,8 +151,6 @@ export default (keyboard, debug) => {
     // pointer. We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an 
     // array) first element is never set (stack[0] will never be used)
     function returnFromSub () {
-      logger.log('returnFromSub')
-      
       sp -= 1
       pc = stack[sp]
     }
@@ -170,7 +158,6 @@ export default (keyboard, debug) => {
 
   // 1nnn - JP addr -> Sets pc to nnn
   function jump (inst) {
-    logger.log('jump')
     pc = inst.nnn
   }
 
@@ -179,8 +166,6 @@ export default (keyboard, debug) => {
   // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set 
   // to nnn. We're doing this the other way around (set, then increment), see 00EE for more info.
   function callSubroutine (inst) {
-    logger.log('callSubroutine')
-
     stack[sp] = pc
     sp += 1
     pc = inst.nnn
@@ -188,7 +173,6 @@ export default (keyboard, debug) => {
 
   // 3xkk - SE Vx, byte -> The interpreter compares register Vx to kk, and if they are equal, increments pc by 2.
   function skipIfVxkk (inst) {
-    logger.log('skipIfVxkk')
     if (vRegisters[inst.x] === inst.kk) {
       pc += 2
     }
@@ -198,7 +182,6 @@ export default (keyboard, debug) => {
   // Skip next instruction if Vx != kk.
   // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
   function skipIfNotVxkk (inst) {
-    logger.log('skipIfNotVxkk')
     if (vRegisters[inst.x] !== inst.kk) {
       pc += 2
     }
@@ -209,14 +192,12 @@ export default (keyboard, debug) => {
   // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
   function skipIfVxVy (nnn) {
     debugger
-    logger.log('skipIfVxVy')
   }
 
   // 6xkk - LD Vx, byte
   // Set Vx = kk.
   // The interpreter puts the value kk into register Vx.
   function loadVxVal (inst) {
-    logger.log('loadVxVal')
     vRegisters[inst.x] = inst.kk
   }
 
@@ -224,7 +205,6 @@ export default (keyboard, debug) => {
   // Set Vx = Vx + kk.
   // Adds the value kk to the value of register Vx, then stores the result in Vx. 
   function addVxVal (inst) {
-    logger.log('addVxVal')
     vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
   }
 
@@ -280,8 +260,6 @@ export default (keyboard, debug) => {
     // Set Vx = Vx - Vy, set VF = NOT borrow.
     // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
     function vXSubVy () {
-      const result = vRegisters[inst.x] - vRegisters[inst.y]
-
       if (vRegisters[inst.x] > vRegisters[inst.y]) {
         vRegisters[0xF] = 1
       } else {
@@ -317,7 +295,6 @@ export default (keyboard, debug) => {
   // Skip next instruction if Vx != Vy.
   // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
   function skipIfNotVxVy (inst) {
-    logger.log('skipIfNotVxVy')
     if (vRegisters[inst.x] !== vRegisters[inst.y]) {
       pc += 2
     }
@@ -328,7 +305,6 @@ export default (keyboard, debug) => {
   // Set I = nnn.
   // The value of register I is set to nnn.
   function loadIAddr (inst) {
-    logger.log('loadIAddr')
     iRegister = inst.nnn
   }
 
@@ -337,7 +313,6 @@ export default (keyboard, debug) => {
   // The program counter is set to nnn plus the value of V0.
   function jumpV0Offset (nnn) {
     debugger
-    logger.log('jumpV0Offset')
   }
 
   // Cxkk - RND Vx, byte
@@ -345,7 +320,6 @@ export default (keyboard, debug) => {
   // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are 
   // stored in Vx. See instruction 8xy2 for more information on AND.
   function setVxRandom (inst) {
-    logger.log('setVxRandom')
     const random = Math.floor(Math.random(1) * 255)
     vRegisters[inst.x] = random & inst.kk
   }
@@ -384,12 +358,12 @@ export default (keyboard, debug) => {
         vRegisters[0xF] = currentPixel > newPixel ? 1 : 0
       }
     }
+
+    drawFlag = true
   }
 
   // 0xE000
   function skipKey (inst) {
-    logger.log('skipKey')
-
     // Ex9E - SKP Vx -> Skip next instruction if key with the value of Vx is pressed.
     if (inst.kk == 0x9E) {
       const isKeyPressed = keyboard.get(vRegisters[inst.x])
@@ -416,8 +390,6 @@ export default (keyboard, debug) => {
 
   // 0xF000
   function registerManipulation (inst) {
-    logger.log('registerManipulation')
-
     const microOpCodes = {
       0x07: loadDelayTimer,
       0x15: setDelayTimer,
@@ -458,7 +430,6 @@ export default (keyboard, debug) => {
     // Set I = location of sprite for digit Vx.
     // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx.
     function loadIVx () {
-      logger.log('loadIVx')
       iRegister = vRegisters[inst.x] * 5
     }
 
@@ -467,7 +438,6 @@ export default (keyboard, debug) => {
     // The interpreter takes the decimal value of Vx, and places the hundreds digit in 
     // memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
     function storeBcd () {
-      logger.log('storeBcd')
       const dec = vRegisters[inst.x]
 
       // For a given value, say 234
@@ -478,8 +448,6 @@ export default (keyboard, debug) => {
 
     // Fx55 - LD [I], Vx -> V[0]...V[x] => memory[I]...memory[I + x]
     function loadIV0ToVx () {
-      logger.log('loadIVx')
-
       for (let i = 0; i <= inst.x; i += 1) {
         memory[iRegister + i] = vRegisters[i]
       }
@@ -487,8 +455,6 @@ export default (keyboard, debug) => {
 
     // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
     function loadV0ToVxI () {
-      logger.log('loadVxI')
-
       for (let i = 0; i <= inst.x ; i += 1) {
         vRegisters[i] = memory[iRegister + i]
       }
@@ -498,7 +464,7 @@ export default (keyboard, debug) => {
     // Wait for a key press, store the value of the key in Vx.
     // All execution stops until a key is pressed, then the value of that key is stored in Vx.
     function waitForKeyPress () {
-      
+
     }
 
     // Fx18 - LD ST, Vx -> Set sound timer = Vx.
@@ -515,13 +481,27 @@ export default (keyboard, debug) => {
   }
 
   function notImplemented (nnn) {
-    logger.log('function not implemented')
+    debugger
+  }
+
+  function start () {
+    console.log('starting')
+    window.requestAnimationFrame(function loop () {
+      cycle()
+
+      if (drawFlag) {
+        render()
+        drawFlag = false
+      }
+
+      window.requestAnimationFrame(loop)
+    })
   }
 
   return {
     cycle,
     display,
     memory,
-    times
+    start
   }
 }

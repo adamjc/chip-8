@@ -11,15 +11,17 @@ function loadMemory (file) {
     chip8.memory[0x200 + i] = array[i]
   }
 
-  setInterval(loop, 2) // CHIP-8 runs at 500MHz from what I've read...
+  chip8.start()
 }
 
-function loop () {
-  chip8.cycle()
-  drawCanvas()
-}
+const canvas = document.createElement('canvas')
+canvas.id = 'canvas'
+canvas.width = 64 * SCALE
+canvas.height = 32 * SCALE
+document.body.appendChild(canvas)
+const context = canvas.getContext('2d')
 
-function drawCanvas () {
+function render () {
   // get currentTime
   const currentTime = Date.now()
   // subtract from last time this was called (lastTimeDrawn)
@@ -28,29 +30,18 @@ function drawCanvas () {
   const fps = (1000 / 60)
   
   // if dT >= 1000 / 60, or however quickly you want to refresh the draw screen
-  if (dT >= fps) {
-    // draw it
-    const canvas = document.getElementById('canvas')
-    const context = canvas.getContext('2d')
-
+  // if (dT >= fps) {
+  //   // draw it
     for (var x = 0; x < chip8.display.length; x += 1) {
       for (var y = 0; y < chip8.display[0].length; y += 1) {
         const pixel = chip8.display[x][y]
         context.fillStyle = pixel ? '#fff' : '#000'
-        context.strokeStyle = '#555'
-        context.strokeRect(x * SCALE, y * SCALE, SCALE, SCALE)
         context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
       }
     }
 
-    lastTimeDrawn = currentTime
-  }
-}
-
-function dumpMemory () {
-  for (var i = 0; i < chip8.memory.length; i += 1) {
-    console.log(chip8.memory[i])
-  }
+  //   lastTimeDrawn = currentTime
+  // }
 }
 
 function readSingleFile (event) {
@@ -111,7 +102,6 @@ let keyboard = (function () {
   }
 
   function get (hexKey) {
-    debugger
     return keys[keyMap[hexKey.toString(16)]]
   }
 
@@ -122,13 +112,7 @@ let keyboard = (function () {
   }
 })()
 
-let canvas = document.createElement('canvas')
-canvas.id = 'canvas'
-canvas.width = 64 * SCALE
-canvas.height = 32 * SCALE
-document.body.appendChild(canvas)
-
-const chip8 = Chip8(keyboard, false)
+const chip8 = Chip8(keyboard, render)
 
 window.addEventListener('keydown', ({ key }) => {
   keyboard.set(key, true)
