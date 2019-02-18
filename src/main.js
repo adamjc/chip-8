@@ -15,7 +15,7 @@ function loadMemory (file) {
 }
 
 function loop () {
-  if (loopCount > 1000) {
+  if (loopCount > 5000) {
     console.log('clearing interval...')
     clearInterval(interval)
   }

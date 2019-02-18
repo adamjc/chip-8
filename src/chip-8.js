@@ -230,7 +230,8 @@ export default (keyboard, debug) => {
   // 0x8000
   function settingFuncs (inst) {
     const microOpCodes = {
-      0x2: vXAnd
+      0x2: vXAndVy,
+      0x4: vXAddVy
     }
 
     // 8xy0 - LD Vx, Vy
@@ -246,7 +247,7 @@ export default (keyboard, debug) => {
     // it is 0.
 
     // 8xy2 - AND Vx, Vy -> Vx = Vx & Vy
-    function vXAnd () {
+    function vXAndVy () {
       vRegisters[inst.x] = vRegisters[inst.x] & vRegisters[inst.y]
     }
     
@@ -257,11 +258,21 @@ export default (keyboard, debug) => {
     // result is set to 1. Otherwise, it is 0.
     
     
-    // 8xy4 - ADD Vx, Vy
+    // 8xy4 - ADD Vx, Vy -> Vx = Vx + Vy
     // Set Vx = Vx + Vy, set VF = carry.
     // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, 
     // otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
-    
+    function vXAddVy () {
+      const result = (vRegisters[inst.x] + vRegisters[inst.y])
+      
+      if (result > 0xFF) {
+        vRegisters[0xF] = 1
+      } else {
+        vRegisters[0xF] = 0
+      }
+
+      vRegisters[inst.x] = result & 0xFF
+    }
     
     // 8xy5 - SUB Vx, Vy
     // Set Vx = Vx - Vy, set VF = NOT borrow.
