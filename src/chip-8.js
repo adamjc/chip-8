@@ -380,7 +380,10 @@ export default (keyboard, debug) => {
     // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is 
     // increased by 2.
     if (inst.kk == 0xA1) {
-      debugger
+      const isKeyPressed = keyboard.get(vRegisters[inst.x])
+      if (!isKeyPressed) {
+        pc += 2
+      }
       return
     }
 
