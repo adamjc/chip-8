@@ -146,6 +146,7 @@ export default (keyboard, debug) => {
 
     // 00E0 - CLS
     function clearScreen () {
+      debugger
       logger.log('clearScreen')
 
       for (var x = 0; x < display.length; x += 1) {
@@ -230,15 +231,15 @@ export default (keyboard, debug) => {
   // 0x8000
   function settingFuncs (inst) {
     const microOpCodes = {
+      0x0: loadVxVy,  
       0x2: vXAndVy,
       0x4: vXAddVy
     }
 
-    // 8xy0 - LD Vx, Vy
-    // Set Vx = Vy.
-    
-    // Stores the value of register Vy in register Vx.
-    
+    // 8xy0 - LD Vx, Vy -> Vx = Vy
+    function loadVxVy () {
+      vRegisters[inst.x] = vRegisters[inst.y]
+    }
     
     // 8xy1 - OR Vx, Vy
     // Set Vx = Vx OR Vy.
@@ -350,7 +351,7 @@ export default (keyboard, debug) => {
     let x = vRegisters[inst.x]
     let y = vRegisters[inst.y]
     vRegisters[0xF] = 0
-
+    
     for (var i = 0; i < inst.n; i += 1) {
       if (y + i > DISPLAY_HEIGHT - 1) y = 0
 
@@ -368,7 +369,12 @@ export default (keyboard, debug) => {
 
         display[x + j][y + i] = newPixel
 
-        vRegisters[0xF] = newPixel
+        vRegisters[0xF] = currentPixel > newPixel ? 1 : 0
+
+        // if (currentPixel > newPixel) {
+        //   debugger
+        // }
+        
       }
     }
   }
