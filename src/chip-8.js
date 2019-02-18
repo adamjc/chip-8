@@ -361,13 +361,14 @@ export default (keyboard, debug) => {
   function draw (inst) {
     let x = vRegisters[inst.x]
     let y = vRegisters[inst.y]
+    let iAddr = iRegister
     vRegisters[0xF] = 0
     
     for (var i = 0; i < inst.n; i += 1) {
       if (y + i > DISPLAY_HEIGHT - 1) y = 0
 
-      const line = memory[iRegister]
-      iRegister += 1
+      const line = memory[iAddr]
+      iAddr += 1
 
       for (var j = 0; j < WORD_SIZE; j += 1) {
         if (x + j > DISPLAY_WIDTH - 1) x = 0
