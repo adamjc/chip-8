@@ -396,8 +396,8 @@ export default (keyboard) => {
       0x15: setDelayTimer,
       0x29: loadIVx,
       0x33: storeBcd,
-      0x55: loadIVx,
-      0x65: loadVxI
+      0x55: loadIV0ToVx,
+      0x65: loadV0ToVxI
     }
 
     // Fx07 - LD Vx, DT -> The value of DT is placed into Vx.
@@ -433,19 +433,19 @@ export default (keyboard) => {
     }
 
     // Fx55 - LD [I], Vx -> V[0]...V[x] => memory[I]...memory[I + x]
-    function loadIVx () {
+    function loadIV0ToVx () {
       logger.log('loadIVx')
 
-      for (let i = 0; i < inst.x; i += 1) {
+      for (let i = 0; i <= inst.x; i += 1) {
         memory[iRegister + i] = vRegisters[i]
       }
     }
 
     // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
-    function loadVxI () {
+    function loadV0ToVxI () {
       logger.log('loadVxI')
 
-      for (let i = 0; i < inst.x ; i += 1) {
+      for (let i = 0; i <= inst.x ; i += 1) {
         vRegisters[i] = memory[iRegister + i]
       }
     }
