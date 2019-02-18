@@ -2,8 +2,8 @@
 
 import loggerFactory from './logger' // laugh it up, Joel
 
-export default (keyboard) => {
-  const logger = new loggerFactory(true)
+export default (keyboard, debug) => {
+  const logger = new loggerFactory(debug)
 
   // CHIP-8 Interpreter
   const WORD_SIZE = 8
@@ -394,6 +394,7 @@ export default (keyboard) => {
     const microOpCodes = {
       0x07: loadDelayTimer,
       0x15: setDelayTimer,
+      0x1E: addIVx,
       0x29: loadIVx,
       0x33: storeBcd,
       0x55: loadIV0ToVx,
@@ -408,6 +409,13 @@ export default (keyboard) => {
     // Fx15 - LD DT, Vx -> DT is set equal to the value of Vx.
     function setDelayTimer () {
       delayTimer = vRegisters[inst.x]
+    }
+
+    // Fx1E - ADD I, Vx
+    // Set I = I + Vx.
+    // The values of I and Vx are added, and the results are stored in I.
+    function addIVx () {
+      iRegister = iRegister + vRegisters[inst.x]
     }
 
     // Fx29 - LD F, Vx
@@ -459,10 +467,6 @@ export default (keyboard) => {
     // Fx18 - LD ST, Vx
     // Set sound timer = Vx.
     // ST is set equal to the value of Vx.
-
-    // Fx1E - ADD I, Vx
-    // Set I = I + Vx.
-    // The values of I and Vx are added, and the results are stored in I.
 
     if (!microOpCodes[inst.kk]) {
       debugger

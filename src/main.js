@@ -15,7 +15,7 @@ function loadMemory (file) {
 }
 
 function loop () {
-  if (loopCount > 50) {
+  if (loopCount > 1000) {
     console.log('clearing interval...')
     clearInterval(interval)
   }
@@ -128,7 +128,7 @@ let keyboard = (function () {
   }
 })()
 
-const chip8 = Chip8(keyboard)
+const chip8 = Chip8(keyboard, false)
 
 window.addEventListener('keydown', ({ key }) => {
   keyboard.set(key, true)
