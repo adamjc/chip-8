@@ -497,8 +497,9 @@ export default (keyboard, debug) => {
     // Fx0A - LD Vx, K
     // Wait for a key press, store the value of the key in Vx.
     // All execution stops until a key is pressed, then the value of that key is stored in Vx.
-
-    
+    function waitForKeyPress () {
+      
+    }
 
     // Fx18 - LD ST, Vx -> Set sound timer = Vx.
     function setSoundTimer () {

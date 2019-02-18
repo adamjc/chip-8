@@ -78,13 +78,13 @@ let keyboard = (function () {
     "7": "a",
     "8": "s",
     "9": "d",
-    "A": "z",
+    "a": "z",
     "0": "x",
-    "B": "c",
-    "C": "4",
-    "D": "r",
-    "E": "f",
-    "F": "v"
+    "b": "c",
+    "c": "4",
+    "d": "r",
+    "e": "f",
+    "f": "v"
   }
 
   const keys = {
@@ -111,7 +111,8 @@ let keyboard = (function () {
   }
 
   function get (hexKey) {
-    return keys[keyMap[hexKey.toString()]]
+    debugger
+    return keys[keyMap[hexKey.toString(16)]]
   }
 
   return {
