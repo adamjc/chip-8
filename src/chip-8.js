@@ -425,6 +425,7 @@ export default (keyboard, debug) => {
     const microOpCodes = {
       0x07: loadDelayTimer,
       0x15: setDelayTimer,
+      0x18: setSoundTimer,
       0x1E: addIVx,
       0x29: loadIVx,
       0x33: storeBcd,
@@ -503,9 +504,10 @@ export default (keyboard, debug) => {
 
     
 
-    // Fx18 - LD ST, Vx
-    // Set sound timer = Vx.
-    // ST is set equal to the value of Vx.
+    // Fx18 - LD ST, Vx -> Set sound timer = Vx.
+    function setSoundTimer () {
+      soundTimer = vRegisters[inst.x]
+    }
 
     if (!microOpCodes[inst.kk]) {
       debugger
