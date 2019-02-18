@@ -396,6 +396,7 @@ export default (keyboard) => {
       0x15: setDelayTimer,
       0x29: loadIVx,
       0x33: storeBcd,
+      0x55: loadIVx,
       0x65: loadVxI
     }
 
@@ -431,11 +432,20 @@ export default (keyboard) => {
       memory[iRegister + 2] = dec % 10 // Gives us 4
     }
 
+    // Fx55 - LD [I], Vx -> V[0]...V[x] => memory[I]...memory[I + x]
+    function loadIVx () {
+      logger.log('loadIVx')
+
+      for (let i = 0; i < inst.x; i += 1) {
+        memory[iRegister + i] = vRegisters[i]
+      }
+    }
+
     // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
     function loadVxI () {
       logger.log('loadVxI')
 
-      for (let i = 0; i <= inst.x ; i++) {
+      for (let i = 0; i < inst.x ; i += 1) {
         vRegisters[i] = memory[iRegister + i]
       }
     }
@@ -453,10 +463,6 @@ export default (keyboard) => {
     // Fx1E - ADD I, Vx
     // Set I = I + Vx.
     // The values of I and Vx are added, and the results are stored in I.
-
-    // Fx55 - LD [I], Vx
-    // Store registers V0 through Vx in memory starting at location I.
-    // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
 
     if (!microOpCodes[inst.kk]) {
       debugger
