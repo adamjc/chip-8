@@ -17,7 +17,7 @@ export default (keyboard, debug) => {
   // It was originally designed to work on 4k computers, so lets give ourselves 4k of memory
   // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it was ran on 4k systems)
   // 0x200 -> 0xFFF is used to store the program data
-  let memory = new Array(4096)
+  let memory = new Uint8Array(4096)
 
   // Copied from CowGood's font set
   const fonts = [
@@ -39,7 +39,7 @@ export default (keyboard, debug) => {
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
   ]
 
-  memory.splice(0, fonts.length, ...fonts)
+  memory.set(fonts, 0)
 
   // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz, once at 0 they stay there
   let delayTimer = 0
@@ -233,7 +233,8 @@ export default (keyboard, debug) => {
     const microOpCodes = {
       0x0: loadVxVy,  
       0x2: vXAndVy,
-      0x4: vXAddVy
+      0x4: vXAddVy,
+      0x5: vXSubVy
     }
 
     // 8xy0 - LD Vx, Vy -> Vx = Vy
@@ -264,7 +265,7 @@ export default (keyboard, debug) => {
     // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, 
     // otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
     function vXAddVy () {
-      const result = (vRegisters[inst.x] + vRegisters[inst.y])
+      const result = vRegisters[inst.x] + vRegisters[inst.y]
       
       if (result > 0xFF) {
         vRegisters[0xF] = 1
@@ -278,7 +279,17 @@ export default (keyboard, debug) => {
     // 8xy5 - SUB Vx, Vy
     // Set Vx = Vx - Vy, set VF = NOT borrow.
     // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
-    
+    function vXSubVy () {
+      const result = vRegisters[inst.x] - vRegisters[inst.y]
+
+      if (vRegisters[inst.x] > vRegisters[inst.y]) {
+        vRegisters[0xF] = 1
+      } else {
+        vRegisters[0xF] = 0
+      }
+
+      vRegisters[inst.x] = (vRegisters[inst.x] - vRegisters[inst.y]) & 0xFF
+    }
     
     // 8xy6 - SHR Vx {, Vy}
     // Set Vx = Vx SHR 1.

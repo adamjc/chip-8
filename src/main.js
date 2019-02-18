@@ -11,7 +11,7 @@ function loadMemory (file) {
     chip8.memory[0x200 + i] = array[i]
   }
 
-  setInterval(loop, 1000 / 500) // CHIP-8 runs at 500MHz from what I've read...
+  setInterval(loop, 0.1) // CHIP-8 runs at 500MHz from what I've read...
 }
 
 function loop () {
