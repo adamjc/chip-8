@@ -11,12 +11,12 @@ function loadMemory (file) {
     chip8.memory[0x200 + i] = array[i]
   }
 
-  setInterval(loop, 0.1) // CHIP-8 runs at 500MHz from what I've read...
+  setInterval(loop, 2) // CHIP-8 runs at 500MHz from what I've read...
 }
 
 function loop () {
   chip8.cycle()
-  setTimeout(drawCanvas, 0)
+  drawCanvas()
 }
 
 function drawCanvas () {

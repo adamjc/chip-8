@@ -365,28 +365,23 @@ export default (keyboard, debug) => {
     vRegisters[0xF] = 0
     
     for (var i = 0; i < inst.n; i += 1) {
-      if (y + i > DISPLAY_HEIGHT - 1) y = 0
+      const newY = (y + i) % DISPLAY_HEIGHT
 
       const line = memory[iAddr]
       iAddr += 1
 
       for (var j = 0; j < WORD_SIZE; j += 1) {
-        if (x + j > DISPLAY_WIDTH - 1) x = 0
+        const newX = (x + j) % DISPLAY_WIDTH
 
         const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
         const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
         
-        const currentPixel = display[x + j][y + i]
+        const currentPixel = display[newX][newY]
         const newPixel = currentPixel ^ pixel
 
-        display[x + j][y + i] = newPixel
+        display[newX][newY] = newPixel
 
         vRegisters[0xF] = currentPixel > newPixel ? 1 : 0
-
-        // if (currentPixel > newPixel) {
-        //   debugger
-        // }
-        
       }
     }
   }
