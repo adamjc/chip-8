@@ -5,7 +5,7 @@ export default (keyboard, render) => {
   const WORD_SIZE = 8
 
   // It has 16 8-bit data registers. V[0xF] is the carry register.
-  let vRegisters = new Array(16)
+  let vRegisters = new Uint8Array(16)
 
   // It also has a 16-bit register, usually used for addressing memory
   let iRegister
@@ -487,8 +487,12 @@ export default (keyboard, render) => {
   function start () {
     console.log('starting')
     window.requestAnimationFrame(function loop () {
-      cycle()
-
+      // cycle the CPU "many" times. We're running at about 60Hz here, so * 8 == 480Hz. which is around the speed I
+      // believe it was "meant" to be.
+      for (var i = 0; i < 8; i += 1) {
+        cycle()
+      }
+      
       if (drawFlag) {
         render()
         drawFlag = false

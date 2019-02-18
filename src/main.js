@@ -123,22 +123,3 @@ window.addEventListener('keyup', ({ key }) => {
 })
 
 document.getElementById('file-input').addEventListener('change', readSingleFile, false)
-
-const newCanvas = document.createElement('canvas')
-const ctx = newCanvas.getContext('2d')
-newCanvas.id = 'newCanvas'
-newCanvas.width = 640
-newCanvas.height = 320
-document.body.appendChild(newCanvas)
-
-
-window.requestAnimationFrame(function loopyBoy () {
-  for (var x = 0; x < 64; x += 1) {
-    for (var y = 0; y < 32; y += 1) {
-      ctx.fillStyle = `#${Math.floor(Math.random() * 255)}${Math.floor(Math.random() * 255)}${Math.floor(Math.random() * 255)}`
-      ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
-    }
-  }
-
-  window.requestAnimationFrame(loopyBoy)
-})
