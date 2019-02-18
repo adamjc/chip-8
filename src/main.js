@@ -1,7 +1,7 @@
 import Chip8 from './chip-8'
 
-let interval
-let loopCount = 0
+const SCALE = 10
+let lastTimeDrawn = 0
 
 function loadMemory (file) {
   console.log('loading memory')
@@ -11,21 +11,14 @@ function loadMemory (file) {
     chip8.memory[0x200 + i] = array[i]
   }
 
-  interval = setInterval(loop, 1000 / 500) // CHIP-8 runs at 500MHz from what I've read...
+  setInterval(loop, 1000 / 500) // CHIP-8 runs at 500MHz from what I've read...
 }
 
 function loop () {
-  if (loopCount > 5000) {
-    console.log('clearing interval...')
-    clearInterval(interval)
-  }
-
   chip8.cycle()
   setTimeout(drawCanvas, 0)
-  loopCount += 1
 }
 
-let lastTimeDrawn = 0
 function drawCanvas () {
   // get currentTime
   const currentTime = Date.now()
@@ -45,8 +38,8 @@ function drawCanvas () {
         const pixel = chip8.display[x][y]
         context.fillStyle = pixel ? '#fff' : '#000'
         context.strokeStyle = '#555'
-        context.strokeRect(x * 10, y * 10, 10, 10)
-        context.fillRect(x * 10, y * 10, 10, 10)
+        context.strokeRect(x * SCALE, y * SCALE, SCALE, SCALE)
+        context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
       }
     }
 
@@ -127,6 +120,12 @@ let keyboard = (function () {
     get
   }
 })()
+
+let canvas = document.createElement('canvas')
+canvas.id = 'canvas'
+canvas.width = 64 * SCALE
+canvas.height = 32 * SCALE
+document.body.appendChild(canvas)
 
 const chip8 = Chip8(keyboard, false)
 
