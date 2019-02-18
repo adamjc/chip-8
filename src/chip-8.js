@@ -355,7 +355,9 @@ export default (keyboard, render) => {
 
         display[newX][newY] = newPixel
 
-        vRegisters[0xF] = currentPixel > newPixel ? 1 : 0
+        if (currentPixel > newPixel) {
+          vRegisters[0xF] = 1
+        }
       }
     }
 
