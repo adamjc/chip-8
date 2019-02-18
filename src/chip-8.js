@@ -435,7 +435,15 @@ export default (keyboard, debug) => {
     // Set I = I + Vx.
     // The values of I and Vx are added, and the results are stored in I.
     function addIVx () {
-      iRegister = iRegister + vRegisters[inst.x]
+      const value = iRegister + vRegisters[inst.x]
+      
+      if (value > 0xFFF) {
+        vRegisters[0xF] = 1
+      } else {
+        vRegisters[0xF] = 0
+      }
+
+      iRegister = value & 0xFFF
     }
 
     // Fx29 - LD F, Vx
