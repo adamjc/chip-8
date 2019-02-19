@@ -487,11 +487,15 @@ export default (keyboard, render) => {
   }
 
   function start () {
-    console.log('starting')
+    console.log('Starting...')
+    let lastTimeUpdated = Date.now()
+    const cpuSpeed = 1000 / 500 // 500Mhz
     window.requestAnimationFrame(function loop () {
-      // cycle the CPU "many" times. We're running at about 60Hz here, so * 8 == 480Hz. which is around the speed I
-      // believe it was "meant" to be.
-      for (var i = 0; i < 8; i += 1) {
+      // cycle the CPU "many" times, depending on how long the draw loop took
+      const now = Date.now()
+      const diff = now - lastTimeUpdated
+      const cycles = Math.floor(diff / cpuSpeed)
+      for (var i = 0; i < cycles; i += 1) {
         cycle()
       }
       
@@ -499,6 +503,8 @@ export default (keyboard, render) => {
         render()
         drawFlag = false
       }
+
+      lastTimeUpdated = now
 
       window.requestAnimationFrame(loop)
     })
