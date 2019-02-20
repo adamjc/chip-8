@@ -7,9 +7,7 @@ function loadMemory (file) {
   console.log('loading memory')
   const array = new Uint8Array(file)
 
-  for (let i = 0; i < array.length; i += 1) {
-    chip8.memory[0x200 + i] = array[i]
-  }
+  chip8.setMemory(array, 0x200)
 
   chip8.start()
 }
@@ -22,9 +20,11 @@ document.body.appendChild(canvas)
 const context = canvas.getContext('2d')
 
 function render () {
-  for (var x = 0; x < chip8.display.length; x += 1) {
-    for (var y = 0; y < chip8.display[0].length; y += 1) {
-      const pixel = chip8.display[x][y]
+  const display = chip8.getDisplay()
+
+  for (var x = 0; x < display.length; x += 1) {
+    for (var y = 0; y < display[0].length; y += 1) {
+      const pixel = display[x][y]
       context.fillStyle = pixel ? '#fff' : '#000'
       context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
     }

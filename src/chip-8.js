@@ -59,6 +59,15 @@ export default (keyboard, render) => {
   let drawFlag = true
 
   let animationFrame
+
+  function setMemory (file, start) {
+    memory.set(file, start)
+  }
+  
+  function getDisplay () {
+    return display
+  }
+
   function start () {
     console.log('Starting...')
     let lastTimeUpdated = Date.now()
@@ -69,7 +78,6 @@ export default (keyboard, render) => {
       const diff = now - lastTimeUpdated
       const cycles = Math.floor(diff / cpuSpeed)
       for (var i = 0; i < cycles; i += 1) {
-        console.log('cycling')
         cycle()
       }
       
@@ -87,10 +95,10 @@ export default (keyboard, render) => {
   function reset () {
     window.cancelAnimationFrame(animationFrame)
     memory = new Uint8Array(4096)
+    vRegisters = new Uint8Array(16) 
     memory.set(fonts, 0)
     display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
     pc = 0x200
-    soundTimer = 0
     stack = new Array(16)
     drawFlag = true
     delayTimer = 0
@@ -114,7 +122,7 @@ export default (keyboard, render) => {
     }
 
     const inst = fetch()
-    
+
     // decode & execute (i'm too lazy to have them do separately, feels like a waste? We'll see...)
     decodeAndExecute(inst)
   }
@@ -176,7 +184,7 @@ export default (keyboard, render) => {
       clearScreen() // 0x00E0
     }
 
-    // 00E0 - CLS
+    // 00E0 - CLS -> Clear the screen
     function clearScreen () {
       for (var x = 0; x < display.length; x += 1) {
         for (var y = 0; y < display[x].length; y += 1) {
@@ -526,9 +534,8 @@ export default (keyboard, render) => {
   }
 
   return {
-    cycle,
-    display,
-    memory,
+    getDisplay,
+    setMemory,
     start,
     reset
   }
