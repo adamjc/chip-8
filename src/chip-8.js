@@ -1,14 +1,10 @@
 // Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-
 export default (keyboard, render) => {
   // CHIP-8 Interpreter
   const WORD_SIZE = 8
 
   // It has 16 8-bit data registers. V[0xF] is the carry register.
   let vRegisters = new Uint8Array(16)
-
-  // It also has a 16-bit register, usually used for addressing memory
-  let iRegister
 
   // It was originally designed to work on 4k computers, so lets give ourselves 4k of memory
   // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it was ran on 4k systems)
@@ -46,6 +42,9 @@ export default (keyboard, render) => {
   // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
   let pc = 0x200
 
+  // It also has a 16-bit register, usually used for addressing memory
+  let iRegister = pc
+
   // A stack pointer, allows us to have function calls.
   let sp = 0
   // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
@@ -58,6 +57,46 @@ export default (keyboard, render) => {
   let display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
 
   let drawFlag = true
+
+  let animationFrame
+  function start () {
+    console.log('Starting...')
+    let lastTimeUpdated = Date.now()
+    const cpuSpeed = 1000 / 500 // 500Mhz
+    animationFrame = window.requestAnimationFrame(function loop () {
+      // cycle the CPU "many" times, depending on how long the draw loop took
+      const now = Date.now()
+      const diff = now - lastTimeUpdated
+      const cycles = Math.floor(diff / cpuSpeed)
+      for (var i = 0; i < cycles; i += 1) {
+        console.log('cycling')
+        cycle()
+      }
+      
+      if (drawFlag) {
+        render()
+        drawFlag = false
+      }
+
+      lastTimeUpdated = now
+
+      animationFrame = window.requestAnimationFrame(loop)
+    })
+  }
+
+  function reset () {
+    window.cancelAnimationFrame(animationFrame)
+    memory = new Uint8Array(4096)
+    memory.set(fonts, 0)
+    display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
+    pc = 0x200
+    soundTimer = 0
+    stack = new Array(16)
+    drawFlag = true
+    delayTimer = 0
+    soundTimer = 0
+    iRegister = pc
+  }
 
   // does a cpu cycle innit.
   let lastTimeDecremented = 0
@@ -486,34 +525,11 @@ export default (keyboard, render) => {
     debugger
   }
 
-  function start () {
-    console.log('Starting...')
-    let lastTimeUpdated = Date.now()
-    const cpuSpeed = 1000 / 500 // 500Mhz
-    window.requestAnimationFrame(function loop () {
-      // cycle the CPU "many" times, depending on how long the draw loop took
-      const now = Date.now()
-      const diff = now - lastTimeUpdated
-      const cycles = Math.floor(diff / cpuSpeed)
-      for (var i = 0; i < cycles; i += 1) {
-        cycle()
-      }
-      
-      if (drawFlag) {
-        render()
-        drawFlag = false
-      }
-
-      lastTimeUpdated = now
-
-      window.requestAnimationFrame(loop)
-    })
-  }
-
   return {
     cycle,
     display,
     memory,
-    start
+    start,
+    reset
   }
 }

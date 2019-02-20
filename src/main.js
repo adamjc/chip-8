@@ -22,26 +22,13 @@ document.body.appendChild(canvas)
 const context = canvas.getContext('2d')
 
 function render () {
-  // get currentTime
-  const currentTime = Date.now()
-  // subtract from last time this was called (lastTimeDrawn)
-  // that gives you dT (delta time, the difference)
-  const dT = currentTime - lastTimeDrawn
-  const fps = (1000 / 60)
-  
-  // if dT >= 1000 / 60, or however quickly you want to refresh the draw screen
-  // if (dT >= fps) {
-  //   // draw it
-    for (var x = 0; x < chip8.display.length; x += 1) {
-      for (var y = 0; y < chip8.display[0].length; y += 1) {
-        const pixel = chip8.display[x][y]
-        context.fillStyle = pixel ? '#fff' : '#000'
-        context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
-      }
+  for (var x = 0; x < chip8.display.length; x += 1) {
+    for (var y = 0; y < chip8.display[0].length; y += 1) {
+      const pixel = chip8.display[x][y]
+      context.fillStyle = pixel ? '#fff' : '#000'
+      context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
     }
-
-  //   lastTimeDrawn = currentTime
-  // }
+  }
 }
 
 function readSingleFile (event) {
@@ -120,6 +107,10 @@ window.addEventListener('keydown', ({ key }) => {
 
 window.addEventListener('keyup', ({ key }) => {
   keyboard.set(key, false)
+})
+
+document.getElementById('reset').addEventListener('click', _ => {
+  chip8.reset()
 })
 
 document.getElementById('file-input').addEventListener('change', readSingleFile, false)
