@@ -441,6 +441,7 @@ export default (keyboard, render) => {
   function registerManipulation (inst) {
     const microOpCodes = {
       0x07: loadDelayTimer,
+      0x0A: waitForKeyPress,
       0x15: setDelayTimer,
       0x18: setSoundTimer,
       0x1E: addIVx,
@@ -513,7 +514,15 @@ export default (keyboard, render) => {
     // Wait for a key press, store the value of the key in Vx.
     // All execution stops until a key is pressed, then the value of that key is stored in Vx.
     function waitForKeyPress () {
+      const keyPressed = keyboard.getAny()
 
+      if (!keyPressed) {
+        // keep looping until a key is pressed
+        pc -= 2
+        return
+      }
+      vRegisters[inst.x] = keyPressed
+      return keyPressed
     }
 
     // Fx18 - LD ST, Vx -> Set sound timer = Vx.

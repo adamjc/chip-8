@@ -92,17 +92,31 @@ let keyboard = (function () {
     return keys[keyMap[hexKey.toString(16)]]
   }
 
+  function getAny () {
+    return Object.values(keys).reduce((key, current, index) => {
+      const vmKey = Object.keys(keyMap)[index]
+      if (key) {
+        return key
+      } else if (current) {
+        return vmKey
+      }
+    }, null)
+  }
+
   return {
     keyMap,
     set,
-    get
+    get,
+    getAny
   }
 })()
 
 const chip8 = Chip8(keyboard, render)
 
 window.addEventListener('keydown', ({ key }) => {
-  keyboard.set(key, true)
+  if (Object.values(keyboard.keyMap).includes(key)) {
+    keyboard.set(key, true)
+  }
 })
 
 window.addEventListener('keyup', ({ key }) => {
