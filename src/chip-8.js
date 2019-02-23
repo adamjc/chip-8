@@ -7,7 +7,8 @@ export default (keyboard, render, sound) => {
   let vRegisters = new Uint8Array(16)
 
   // It was originally designed to work on 4k computers, so lets give ourselves 4k of memory
-  // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it was ran on 4k systems)
+  // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it
+  // was ran on 4k systems)
   // 0x200 -> 0xFFF is used to store the program data
   let memory = new Uint8Array(4096)
 
@@ -33,7 +34,8 @@ export default (keyboard, render, sound) => {
 
   memory.set(fonts, 0)
 
-  // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz, once at 0 they stay there
+  // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz,
+  // once at 0 they stay there
   let delayTimer = 0
 
   // When the sound timer hits 0, a monotone sound is played.
@@ -47,7 +49,8 @@ export default (keyboard, render, sound) => {
 
   // A stack pointer, allows us to have function calls.
   let sp = 0
-  // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
+
+  // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used?
   let stack = new Array(16)
 
   // It utilises a 64x32 pixel display... we will get the chip-8 to write to these values, and in our `emulator` code,
@@ -57,7 +60,6 @@ export default (keyboard, render, sound) => {
   let display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
 
   let drawFlag = true
-
   let animationFrame
 
   function setMemory (file, start) {
@@ -135,7 +137,7 @@ export default (keyboard, render, sound) => {
   }
 
   // fetching from memory takes twoooo cycles, cos it's an 8-bit bus,
-  // but each instruction is 16-bits long. Neat-o. VLIW are lame.
+  // but each instruction is 16-bits long.
   function fetch () {
     const inst = (memory[pc] << 8) | memory[pc + 1]
     pc += 2
@@ -148,6 +150,7 @@ export default (keyboard, render, sound) => {
     // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values
     // from the instruction We are using bitmasking to get these values. If you don't quite get what's happening here,
     // look up https://en.wikipedia.org/wiki/Mask_(computing)
+
     const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
     const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
     const x = (inst & 0x0F00) >> 8 // x - A 4-bit value, the lower 4 bits of the high byte of the instructionction
@@ -442,7 +445,6 @@ export default (keyboard, render, sound) => {
       if (!isKeyPressed) {
         pc += 2
       }
-      return
     }
   }
 
@@ -470,9 +472,7 @@ export default (keyboard, render, sound) => {
       delayTimer = vRegisters[inst.x]
     }
 
-    // Fx1E - ADD I, Vx
-    // Set I = I + Vx.
-    // The values of I and Vx are added, and the results are stored in I.
+    // Fx1E - ADD I, Vx -> Set I = I + Vx.
     function addIVx () {
       const value = iRegister + vRegisters[inst.x]
 
@@ -485,9 +485,7 @@ export default (keyboard, render, sound) => {
       iRegister = value & 0xFFF
     }
 
-    // Fx29 - LD F, Vx
-    // Set I = location of sprite for digit Vx.
-    // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx.
+    // Fx29 - LD F, Vx -> Set I = location of sprite for digit Vx.
     function loadIVx () {
       iRegister = vRegisters[inst.x] * 5
     }
@@ -526,11 +524,13 @@ export default (keyboard, render, sound) => {
       const keyPressed = keyboard.getAny()
 
       if (!keyPressed) {
-        // keep looping until a key is pressed
-        pc -= 2
+        pc -= 2 // keep looping until a key is pressed
+
         return
       }
+
       vRegisters[inst.x] = keyPressed
+
       return keyPressed
     }
 
