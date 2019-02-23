@@ -16,6 +16,9 @@ module.exports = {
       from: path.resolve(__dirname, './src/sound.wav'),
       to: path.resolve(__dirname, './dist/sound.wav')
     }, {
+      from: path.resolve(__dirname, './src/main.css'),
+      to: path.resolve(__dirname, './dist/main.css')
+    }, {
       from: path.resolve(__dirname, './src/games/.'),
       to: path.resolve(__dirname, './dist/games/.')
     }])

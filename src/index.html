@@ -2,31 +2,33 @@
   <head>
     <meta charset="utf-8">
     <title>CHIP-8</title>
+    <link rel="stylesheet" type="text/css" href="./main.css">
   </head>
   <body>
     <h1>0x800 - A CHIP-8 Interpreter</h1>
-    <input type="file" id="file-input" />
 
-    <select name="game-picker" id="game-picker">
-      <option value="15PUZZLE">15 Puzzle</option>
-      <option value="BLINKY">Blinky</option>
-      <option value="BLITZ">Blitz</option>
-      <option value="BRIX">Brix</option>
-      <option value="CONNECT4">Connect 4</option>
-      <option value="HIDDEN">Hidden</option>
-      <option value="INVADERS">Invaders</option>
-      <option value="MERLIN">Merlin</option>
-      <option value="MISSILE">Missile</option>
-      <option value="PONG2">Pong 2</option>
-      <option value="PUZZLE">Puzzle</option>
-      <option value="TANK">Tank</option>
-      <option value="TETRIS">Tetris</option>
-      <option value="TICTAC">Tic Tac</option>
-      <option value="UFO">UFO</option>
-      <option value="VERS">Vers</option>
-    </select>
+    <div class="controls">
+        <select name="game-picker" id="game-picker">
+            <option value="" disabled selected=true>Pick A Game</option>
+            <option value="15PUZZLE">15 Puzzle</option>
+            <option value="BLINKY">Blinky</option>
+            <option value="BRIX">Brix</option>
+            <option value="CONNECT4">Connect 4</option>
+            <option value="HIDDEN">Hidden</option>
+            <option value="INVADERS">Invaders</option>
+            <option value="MERLIN">Merlin</option>
+            <option value="MISSILE">Missile</option>
+            <option value="PONG2">Pong 2</option>
+            <option value="PUZZLE">Puzzle</option>
+            <option value="TANK">Tank</option>
+            <option value="TETRIS">Tetris</option>
+            <option value="TICTAC">Tic Tac</option>
+            <option value="UFO">UFO</option>
+            <option value="VERS">Vers</option>
+          </select>
 
-    <button id="reset">Reset</button>
+          <button id="reset">Reset</button>
+    </div>
 
     <script src="./main.js"></script>
   </body>

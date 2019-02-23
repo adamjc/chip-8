@@ -1,0 +1,9 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.controls {
+  padding: 0 0 20px 0;
+}
