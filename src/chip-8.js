@@ -262,7 +262,8 @@ export default (keyboard, render) => {
       0x3: VxXorVy,
       0x2: vXAndVy,
       0x4: vXAddVy,
-      0x5: vXSubVy
+      0x5: vXSubVy,
+      0xE: shiftLeft
     }
 
     // 8xy0 - LD Vx, Vy -> Vx = Vy
@@ -326,10 +327,16 @@ export default (keyboard, render) => {
     // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
     
     
-    // 8xyE - SHL Vx {, Vy}
-    // Set Vx = Vx SHL 1.
-    // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
+    // 8xyE - SHL Vx {, Vy} -> V[0xF] = 1 if Vx >= 0x80, else 0. Then Vx = Vx << 1.
+    function shiftLeft () {
+      if (vRegisters[inst.x] & 0b10000000) {
+        vRegisters[0xF] = 1
+      } else {
+        vRegisters[0xF] = 0
+      }
 
+      vRegisters[inst.x] = vRegisters[inst.x] << 1
+    }
 
     if (!microOpCodes[inst.n]) {
       debugger
