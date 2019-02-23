@@ -15,7 +15,7 @@ const canvas = document.createElement('canvas')
 canvas.id = 'canvas'
 canvas.width = 64 * SCALE
 canvas.height = 32 * SCALE
-document.body.appendChild(canvas)
+document.getElementById('game').appendChild(canvas)
 const context = canvas.getContext('2d')
 
 function render () {
@@ -28,20 +28,6 @@ function render () {
       context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
     }
   }
-}
-
-function readSingleFile (event) {
-  const canvas = document.getElementById('canvas')
-  const context = canvas.getContext('2d')
-  context.fillRect(0, 0, 640, 320, '#000')
-
-  var filename = event.target.files[0]
-
-  if (!filename) return
-
-  const reader = new FileReader()
-  reader.onload = file => loadMemory(file.target.result)
-  reader.readAsArrayBuffer(filename)
 }
 
 let keyboard = (function () {
@@ -114,10 +100,6 @@ const sound = new Audio('./sound.wav')
 const chip8 = Chip8(keyboard, render, sound)
 
 window.addEventListener('keydown', ({ key }) => {
-  if (key === 'm') {
-    sound.play()
-  }
-
   if (Object.values(keyboard.keyMap).includes(key)) {
     keyboard.set(key, true)
   }
@@ -135,6 +117,18 @@ document.getElementById('game-picker').addEventListener('change', event => {
   chip8.reset()
   getGame(event.target.value)
 }, false)
+
+document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mousedown', event => {
+  const key = event.target.innerHTML
+  if (Object.values(keyboard.keyMap).includes(key)) {
+    keyboard.set(key, true)
+  }
+}))
+
+document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mouseup', event => {
+  const key = event.target.innerHTML
+  keyboard.set(key, false)
+}))
 
 function getGame (game) {
   fetch(`./games/${game}`)
