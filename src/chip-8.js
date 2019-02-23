@@ -359,34 +359,24 @@ export default (keyboard, render, sound) => {
     microOpCodes[inst.n]()
   }
 
-  // 9xy0 - SNE Vx, Vy
-  // Skip next instruction if Vx != Vy.
-  // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
+  // 9xy0 - SNE Vx, Vy -> Skip next instruction if Vx != Vy.
   function skipIfNotVxVy (inst) {
     if (vRegisters[inst.x] !== vRegisters[inst.y]) {
       pc += 2
     }
   }
 
-  // 0xA000
-  // Annn - LD I, addr
-  // Set I = nnn.
-  // The value of register I is set to nnn.
+  // 0xA000 -> i = nnn
   function loadIAddr (inst) {
     iRegister = inst.nnn
   }
 
-  // Bnnn - JP V0, addr
-  // Jump to location nnn + V0.
-  // The program counter is set to nnn plus the value of V0.
-  function jumpV0Offset (nnn) {
-    notImplemented()
+  // Bnnn - JP V0, addr -> pc = nnn + V0.
+  function jumpV0Offset (inst) {
+    pc = inst.nnn + vRegisters[0]
   }
 
-  // Cxkk - RND Vx, byte
-  // Set Vx = random byte AND kk.
-  // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are
-  // stored in Vx. See instruction 8xy2 for more information on AND.
+  // Cxkk - RND Vx, byte -> Set Vx = random byte AND kk.
   function setVxRandom (inst) {
     const random = Math.floor(Math.random(1) * 255)
     vRegisters[inst.x] = random & inst.kk
@@ -550,10 +540,6 @@ export default (keyboard, render, sound) => {
     }
 
     return microOpCodes[inst.kk]()
-  }
-
-  function notImplemented (inst) {
-    console.error(`instruction: ${inst.nnn.toString(16)} not yet implemented`)
   }
 
   return {
