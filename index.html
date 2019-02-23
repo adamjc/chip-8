@@ -7,27 +7,57 @@
   <body>
     <h1>0x800 - A CHIP-8 Interpreter</h1>
 
-    <div class="controls">
-        <select name="game-picker" id="game-picker">
-            <option value="" disabled selected=true>Pick A Game</option>
-            <option value="15PUZZLE">15 Puzzle</option>
-            <option value="BLINKY">Blinky</option>
-            <option value="BRIX">Brix</option>
-            <option value="CONNECT4">Connect 4</option>
-            <option value="HIDDEN">Hidden</option>
-            <option value="INVADERS">Invaders</option>
-            <option value="MERLIN">Merlin</option>
-            <option value="MISSILE">Missile</option>
-            <option value="PONG2">Pong 2</option>
-            <option value="PUZZLE">Puzzle</option>
-            <option value="TANK">Tank</option>
-            <option value="TETRIS">Tetris</option>
-            <option value="TICTAC">Tic Tac</option>
-            <option value="UFO">UFO</option>
-            <option value="VERS">Vers</option>
-          </select>
+    <div class="system-controls">
+      <select name="game-picker" id="game-picker">
+        <option value="" disabled selected=true>Pick A Game</option>
+        <option value="15PUZZLE">15 Puzzle</option>
+        <option value="BLINKY">Blinky</option>
+        <option value="BRIX">Brix</option>
+        <option value="CONNECT4">Connect 4</option>
+        <option value="HIDDEN">Hidden</option>
+        <option value="INVADERS">Invaders</option>
+        <option value="MERLIN">Merlin</option>
+        <option value="MISSILE">Missile</option>
+        <option value="PONG2">Pong 2</option>
+        <option value="PUZZLE">Puzzle</option>
+        <option value="TANK">Tank</option>
+        <option value="TETRIS">Tetris</option>
+        <option value="TICTAC">Tic Tac</option>
+        <option value="UFO">UFO</option>
+        <option value="VERS">Vers</option>
+        </select>
 
-          <button id="reset">Reset</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div id="game">
+      <div class="game-controls">
+        <div class="game-controls__text">Game Controls</div>
+        <div class="row">
+          <button class="game-controls__button">1</button>
+          <button class="game-controls__button">2</button>
+          <button class="game-controls__button">3</button>
+          <button class="game-controls__button">4</button>
+        </div>
+        <div class="row">
+          <button class="game-controls__button">q</button>
+          <button class="game-controls__button">w</button>
+          <button class="game-controls__button">e</button>
+          <button class="game-controls__button">r</button>
+        </div>
+        <div class="row">
+          <button class="game-controls__button">a</button>
+          <button class="game-controls__button">s</button>
+          <button class="game-controls__button">d</button>
+          <button class="game-controls__button">f</button>
+        </div>
+        <div class="row">
+          <button class="game-controls__button">z</button>
+          <button class="game-controls__button">x</button>
+          <button class="game-controls__button">c</button>
+          <button class="game-controls__button">v</button>
+        </div>
+      </div>
     </div>
 
     <script src="./main.js"></script>
