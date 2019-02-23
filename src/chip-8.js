@@ -258,7 +258,8 @@ export default (keyboard, render) => {
   // 0x8000
   function settingFuncs (inst) {
     const microOpCodes = {
-      0x0: loadVxVy,  
+      0x0: loadVxVy,
+      0x3: VxXorVy,
       0x2: vXAndVy,
       0x4: vXAddVy,
       0x5: vXSubVy
@@ -280,11 +281,10 @@ export default (keyboard, render) => {
       vRegisters[inst.x] = vRegisters[inst.x] & vRegisters[inst.y]
     }
     
-    // 8xy3 - XOR Vx, Vy
-    // Set Vx = Vx XOR Vy.
-    // Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx. An exclusive OR compares 
-    // the corrseponding bits from two values, and if the bits are not both the same, then the corresponding bit in the 
-    // result is set to 1. Otherwise, it is 0.
+    // 8xy3 - XOR Vx, Vy -> Set Vx = Vx XOR Vy.
+    function VxXorVy () {
+      vRegisters[inst.x] = vRegisters[inst.x] ^ vRegisters[inst.y]
+    }
     
     
     // 8xy4 - ADD Vx, Vy -> Vx = Vx + Vy
