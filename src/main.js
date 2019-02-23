@@ -131,4 +131,17 @@ document.getElementById('reset').addEventListener('click', _ => {
   chip8.reset()
 })
 
-document.getElementById('file-input').addEventListener('change', readSingleFile, false)
+document.getElementById('game-picker').addEventListener('change', event => {
+  chip8.reset()
+  getGame(event.target.value)
+}, false)
+
+function getGame (game) {
+  fetch(`./games/${game}`)
+    .then(response => response.blob())
+    .then(body => {
+      const reader = new FileReader()
+      reader.addEventListener("loadend", _ => loadMemory(reader.result))
+      reader.readAsArrayBuffer(body)
+    })
+}

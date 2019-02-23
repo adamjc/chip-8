@@ -4,12 +4,30 @@
     <title>CHIP-8</title>
   </head>
   <body>
+    <h1>0x800 - A CHIP-8 Interpreter</h1>
     <input type="file" id="file-input" />
-    <h3>Contents of the file:</h3>
-    <pre id="file-content"></pre>
+
+    <select name="game-picker" id="game-picker">
+      <option value="15PUZZLE">15 Puzzle</option>
+      <option value="BLINKY">Blinky</option>
+      <option value="BLITZ">Blitz</option>
+      <option value="BRIX">Brix</option>
+      <option value="CONNECT4">Connect 4</option>
+      <option value="HIDDEN">Hidden</option>
+      <option value="INVADERS">Invaders</option>
+      <option value="MERLIN">Merlin</option>
+      <option value="MISSILE">Missile</option>
+      <option value="PONG2">Pong 2</option>
+      <option value="PUZZLE">Puzzle</option>
+      <option value="TANK">Tank</option>
+      <option value="TETRIS">Tetris</option>
+      <option value="TICTAC">Tic Tac</option>
+      <option value="UFO">UFO</option>
+      <option value="VERS">Vers</option>
+    </select>
+
     <button id="reset">Reset</button>
 
-    <!-- <audio src="./sound.wav"></audio> -->
     <script src="./main.js"></script>
   </body>
 </html>
