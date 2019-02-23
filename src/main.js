@@ -1,7 +1,6 @@
 import Chip8 from './chip-8'
 
 const SCALE = 10
-let lastTimeDrawn = 0
 
 function loadMemory (file) {
   console.log('loading memory')
@@ -41,47 +40,47 @@ function readSingleFile (event) {
   if (!filename) return
 
   const reader = new FileReader()
-  reader.onload = file => loadMemory(file.target.result)  
+  reader.onload = file => loadMemory(file.target.result)
   reader.readAsArrayBuffer(filename)
 }
 
 let keyboard = (function () {
   const keyMap = {
-    "1": "1",
-    "2": "2",
-    "3": "3",
-    "4": "q",
-    "5": "w",
-    "6": "e",
-    "7": "a",
-    "8": "s",
-    "9": "d",
-    "a": "z",
-    "0": "x",
-    "b": "c",
-    "c": "4",
-    "d": "r",
-    "e": "f",
-    "f": "v"
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': 'q',
+    '5': 'w',
+    '6': 'e',
+    '7': 'a',
+    '8': 's',
+    '9': 'd',
+    'a': 'z',
+    '0': 'x',
+    'b': 'c',
+    'c': '4',
+    'd': 'r',
+    'e': 'f',
+    'f': 'v'
   }
 
   const keys = {
-    "1": false,
-    "2": false,
-    "3": false,
-    "q": false,
-    "w": false,
-    "e": false,
-    "a": false,
-    "s": false,
-    "d": false,
-    "z": false,
-    "x": false,
-    "c": false,
-    "4": false,
-    "r": false,
-    "f": false,
-    "v": false
+    '1': false,
+    '2': false,
+    '3': false,
+    'q': false,
+    'w': false,
+    'e': false,
+    'a': false,
+    's': false,
+    'd': false,
+    'z': false,
+    'x': false,
+    'c': false,
+    '4': false,
+    'r': false,
+    'f': false,
+    'v': false
   }
 
   function set (keyPress, value) {

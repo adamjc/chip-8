@@ -28,7 +28,7 @@ export default (keyboard, render, sound) => {
     0xF0, 0x80, 0x80, 0x80, 0xF0, // C
     0xE0, 0x90, 0x90, 0x90, 0xE0, // D
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+    0xF0, 0x80, 0xF0, 0x80, 0x80 // F
   ]
 
   memory.set(fonts, 0)
@@ -50,7 +50,7 @@ export default (keyboard, render, sound) => {
   // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used? I'll stick with 16 just in case...
   let stack = new Array(16)
 
-  // It utilises a 64x32 pixel display... we will get the chip-8 to write to these values, and in our `emulator` code, 
+  // It utilises a 64x32 pixel display... we will get the chip-8 to write to these values, and in our `emulator` code,
   // we will write these values to a screen. Simple! (should be!).
   const DISPLAY_WIDTH = 64
   const DISPLAY_HEIGHT = 32
@@ -63,7 +63,7 @@ export default (keyboard, render, sound) => {
   function setMemory (file, start) {
     memory.set(file, start)
   }
-  
+
   function getDisplay () {
     return display
   }
@@ -80,7 +80,7 @@ export default (keyboard, render, sound) => {
       for (var i = 0; i < cycles; i += 1) {
         cycle()
       }
-      
+
       if (drawFlag) {
         render()
         drawFlag = false
@@ -95,7 +95,7 @@ export default (keyboard, render, sound) => {
   function reset () {
     window.cancelAnimationFrame(animationFrame)
     memory = new Uint8Array(4096)
-    vRegisters = new Uint8Array(16) 
+    vRegisters = new Uint8Array(16)
     memory.set(fonts, 0)
     display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
     pc = 0x200
@@ -108,7 +108,6 @@ export default (keyboard, render, sound) => {
 
   // does a cpu cycle innit.
   let lastTimeDecremented = 0
-  let soundFlag = false
   function cycle () {
     const currentTime = Date.now()
     const dT = currentTime - lastTimeDecremented
@@ -135,9 +134,9 @@ export default (keyboard, render, sound) => {
     decodeAndExecute(inst)
   }
 
-  // fetching from memory takes twoooo cycles, cos it's an 8-bit bus, 
+  // fetching from memory takes twoooo cycles, cos it's an 8-bit bus,
   // but each instruction is 16-bits long. Neat-o. VLIW are lame.
-  function fetch() {
+  function fetch () {
     const inst = (memory[pc] << 8) | memory[pc + 1]
     pc += 2
 
@@ -145,17 +144,17 @@ export default (keyboard, render, sound) => {
   }
 
   // aight we got a hex value now we need to look up what that means exactly
-  function decodeAndExecute(inst) {
-    // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values 
-    // from the instruction We are using bitmasking to get these values. If you don't quite get what's happening here, 
+  function decodeAndExecute (inst) {
+    // Many of the instructions follow the structure below, so to make my life simpler, I will calculate these values
+    // from the instruction We are using bitmasking to get these values. If you don't quite get what's happening here,
     // look up https://en.wikipedia.org/wiki/Mask_(computing)
     const nnn = inst & 0x0FFF // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
-    const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction  
+    const n = inst & 0x000F // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
     const x = (inst & 0x0F00) >> 8 // x - A 4-bit value, the lower 4 bits of the high byte of the instructionction
-    const y = (inst & 0x00F0) >> 4// y - A 4-bit value, the upper 4 bits of the low byte of the instru  
+    const y = (inst & 0x00F0) >> 4// y - A 4-bit value, the upper 4 bits of the low byte of the instru
     const kk = inst & 0x00FF // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
 
-    // gonna split this into 'macro level opcodes' and 'micro level opcodes', as the instructions can be indexed by the 
+    // gonna split this into 'macro level opcodes' and 'micro level opcodes', as the instructions can be indexed by the
     // highest byte first, and then after that we can decide what to do...
     const highByte = inst & 0xF000
     // We... could use a switch statement here, but that would be insane, right? How about a map instead?
@@ -178,7 +177,7 @@ export default (keyboard, render, sound) => {
       0xF000: registerManipulation
     }
 
-    const macroOpcode = macroOpcodes[highByte] ? macroOpcodes[highByte] : notImplemented  
+    const macroOpcode = macroOpcodes[highByte] ? macroOpcodes[highByte] : notImplemented
 
     macroOpcode({ nnn, n, x, y, kk }) // Yes, very ineffecient right now
   }
@@ -202,8 +201,8 @@ export default (keyboard, render, sound) => {
     }
 
     // 00EE - RET
-    // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack 
-    // pointer. We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an 
+    // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack
+    // pointer. We're doing it the other way around (subtract, THEN set), because otherwise our 'stack's' (which is an
     // array) first element is never set (stack[0] will never be used)
     function returnFromSub () {
       sp -= 1
@@ -218,7 +217,7 @@ export default (keyboard, render, sound) => {
 
   // 2nnn - CALL addr
   // Call subroutine at nnn.
-  // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set 
+  // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set
   // to nnn. We're doing this the other way around (set, then increment), see 00EE for more info.
   function callSubroutine (inst) {
     stack[sp] = pc
@@ -227,7 +226,7 @@ export default (keyboard, render, sound) => {
   }
 
   // 3xkk - SE Vx, byte -> The interpreter compares register Vx to kk, and if they are equal, increments pc by 2.
-  function skipIfVxkk (inst) {
+  function skipIfVxkk (inst) { // 5xy0 - SE Vx, Vy
     if (vRegisters[inst.x] === inst.kk) {
       pc += 2
     }
@@ -246,7 +245,7 @@ export default (keyboard, render, sound) => {
   // Skip next instruction if Vx = Vy.
   // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
   function skipIfVxVy (nnn) {
-    debugger
+    notImplemented()
   }
 
   // 6xkk - LD Vx, byte
@@ -258,7 +257,7 @@ export default (keyboard, render, sound) => {
 
   // 0x7000
   // Set Vx = Vx + kk.
-  // Adds the value kk to the value of register Vx, then stores the result in Vx. 
+  // Adds the value kk to the value of register Vx, then stores the result in Vx.
   function addVxVal (inst) {
     vRegisters[inst.x] = vRegisters[inst.x] + inst.kk
   }
@@ -281,7 +280,7 @@ export default (keyboard, render, sound) => {
     function loadVxVy () {
       vRegisters[inst.x] = vRegisters[inst.y]
     }
-    
+
     // 8xy1 - OR Vx, Vy -> Vx = Vx | Vy
     function vXOrVy () {
       vRegisters[inst.x] = vRegisters[inst.x] | vRegisters[inst.y]
@@ -291,13 +290,12 @@ export default (keyboard, render, sound) => {
     function vXAndVy () {
       vRegisters[inst.x] = vRegisters[inst.x] & vRegisters[inst.y]
     }
-    
+
     // 8xy3 - XOR Vx, Vy -> Set Vx = Vx XOR Vy.
     function VxXorVy () {
       vRegisters[inst.x] = vRegisters[inst.x] ^ vRegisters[inst.y]
     }
-    
-    
+
     // 8xy4 - ADD Vx, Vy -> Vx = Vx + Vy -> Vx = Vx + Vy, set VF = carry.
     function vXAddVy () {
       const result = vRegisters[inst.x] + vRegisters[inst.y]
@@ -310,7 +308,7 @@ export default (keyboard, render, sound) => {
 
       vRegisters[inst.x] = result & 0xFF
     }
-    
+
     // 8xy5 - SUB Vx, Vy
     // Set Vx = Vx - Vy, set VF = NOT borrow.
     // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
@@ -323,7 +321,7 @@ export default (keyboard, render, sound) => {
 
       vRegisters[inst.x] = (vRegisters[inst.x] - vRegisters[inst.y]) & 0xFF
     }
-    
+
     // 8xy6 - SHR Vx {, Vy} -> V[0xF] = Vx & 0x1. Set Vx = Vx >> 1
     function shiftRight () {
       vRegisters[0xF] = vRegisters[inst.x] & 0b1
@@ -340,7 +338,7 @@ export default (keyboard, render, sound) => {
 
       vRegisters[inst.x] = vRegisters[inst.y] - vRegisters[inst.x]
     }
-    
+
     // 8xyE - SHL Vx {, Vy} -> V[0xF] = 1 if Vx >= 0x80, else 0. Then Vx = Vx << 1.
     function shiftLeft () {
       if (vRegisters[inst.x] & 0b10000000) {
@@ -353,10 +351,10 @@ export default (keyboard, render, sound) => {
     }
 
     if (!microOpCodes[inst.n]) {
-      debugger
+      console.error(`Missing instruction: ${inst.n.toString(16)}`)
     }
-    
-    microOpCodes[inst.n] ()
+
+    microOpCodes[inst.n]()
   }
 
   // 9xy0 - SNE Vx, Vy
@@ -380,12 +378,12 @@ export default (keyboard, render, sound) => {
   // Jump to location nnn + V0.
   // The program counter is set to nnn plus the value of V0.
   function jumpV0Offset (nnn) {
-    debugger
+    notImplemented()
   }
 
   // Cxkk - RND Vx, byte
   // Set Vx = random byte AND kk.
-  // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are 
+  // The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are
   // stored in Vx. See instruction 8xy2 for more information on AND.
   function setVxRandom (inst) {
     const random = Math.floor(Math.random(1) * 255)
@@ -394,18 +392,18 @@ export default (keyboard, render, sound) => {
 
   // Dxyn - DRW Vx, Vy, nibble
   // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-  // The interpreter reads n bytes from memory, starting at the address stored in I. 
-  // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy). 
-  // Sprites are XORed onto the existing screen. 
-  // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. 
-  // If the sprite is positioned so part of it is outside the coordinates of the display, i t wraps around to the 
+  // The interpreter reads n bytes from memory, starting at the address stored in I.
+  // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
+  // Sprites are XORed onto the existing screen.
+  // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
+  // If the sprite is positioned so part of it is outside the coordinates of the display, i t wraps around to the
   // opposite side of the screen.
   function draw (inst) {
     let x = vRegisters[inst.x]
     let y = vRegisters[inst.y]
     let iAddr = iRegister
     vRegisters[0xF] = 0
-    
+
     for (var i = 0; i < inst.n; i += 1) {
       const newY = (y + i) % DISPLAY_HEIGHT
 
@@ -417,7 +415,7 @@ export default (keyboard, render, sound) => {
 
         const bitmask = 0b00000001 << (WORD_SIZE - 1 - j)
         const pixel = (line & bitmask) >> (WORD_SIZE - 1 - j)
-        
+
         const currentPixel = display[newX][newY]
         const newPixel = currentPixel ^ pixel
 
@@ -435,7 +433,7 @@ export default (keyboard, render, sound) => {
   // 0xE000
   function skipKey (inst) {
     // Ex9E - SKP Vx -> Skip next instruction if key with the value of Vx is pressed.
-    if (inst.kk == 0x9E) {
+    if (inst.kk === 0x9E) {
       const isKeyPressed = keyboard.get(vRegisters[inst.x])
       if (isKeyPressed) {
         pc += 2
@@ -445,9 +443,9 @@ export default (keyboard, render, sound) => {
 
     // ExA1 - SKNP Vx
     // Skip next instruction if key with the value of Vx is not pressed.
-    // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is 
+    // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is
     // increased by 2.
-    if (inst.kk == 0xA1) {
+    if (inst.kk === 0xA1) {
       const isKeyPressed = keyboard.get(vRegisters[inst.x])
       if (!isKeyPressed) {
         pc += 2
@@ -455,7 +453,7 @@ export default (keyboard, render, sound) => {
       return
     }
 
-    debugger
+    notImplemented()
   }
 
   // 0xF000
@@ -487,7 +485,7 @@ export default (keyboard, render, sound) => {
     // The values of I and Vx are added, and the results are stored in I.
     function addIVx () {
       const value = iRegister + vRegisters[inst.x]
-      
+
       if (value > 0xFFF) {
         vRegisters[0xF] = 1
       } else {
@@ -506,7 +504,7 @@ export default (keyboard, render, sound) => {
 
     // Fx33 - LD B, Vx
     // Store BCD representation of Vx in memory locations I, I+1, and I+2.
-    // The interpreter takes the decimal value of Vx, and places the hundreds digit in 
+    // The interpreter takes the decimal value of Vx, and places the hundreds digit in
     // memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
     function storeBcd () {
       const dec = vRegisters[inst.x]
@@ -526,7 +524,7 @@ export default (keyboard, render, sound) => {
 
     // Fx65 - LD Vx, [I] -> The interpreter reads values from memory starting at location I into registers V0 through Vx.
     function loadV0ToVxI () {
-      for (let i = 0; i <= inst.x ; i += 1) {
+      for (let i = 0; i <= inst.x; i += 1) {
         vRegisters[i] = memory[iRegister + i]
       }
     }
@@ -552,15 +550,14 @@ export default (keyboard, render, sound) => {
     }
 
     if (!microOpCodes[inst.kk]) {
-      debugger
-      return
+      notImplemented()
     }
 
     return microOpCodes[inst.kk]()
   }
 
-  function notImplemented (nnn) {
-    debugger
+  function notImplemented (inst) {
+    console.error(`instruction: ${inst.nnn.toString(16)} not yet implemented`)
   }
 
   return {
