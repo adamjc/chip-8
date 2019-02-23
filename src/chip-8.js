@@ -263,6 +263,7 @@ export default (keyboard, render) => {
       0x2: vXAndVy,
       0x4: vXAddVy,
       0x5: vXSubVy,
+      0x6: shiftRight,
       0x7: vYSubVx,
       0xE: shiftLeft
     }
@@ -318,9 +319,11 @@ export default (keyboard, render) => {
       vRegisters[inst.x] = (vRegisters[inst.x] - vRegisters[inst.y]) & 0xFF
     }
     
-    // 8xy6 - SHR Vx {, Vy}
-    // Set Vx = Vx SHR 1.
-    // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
+    // 8xy6 - SHR Vx {, Vy} -> V[0xF] = Vx & 0x1. Set Vx = Vx >> 1
+    function shiftRight () {
+      vRegisters[0xF] = vRegisters[inst.x] & 0b1
+      vRegisters[inst.x] = vRegisters[inst.x] >> 1
+    }
 
     // 8xy7 - SUBN Vx, Vy -> Set Vx = Vy - Vx, set VF = NOT borrow.
     function vYSubVx () {
