@@ -259,6 +259,7 @@ export default (keyboard, render) => {
   function settingFuncs (inst) {
     const microOpCodes = {
       0x0: loadVxVy,
+      0x1: vXOrVy,
       0x3: VxXorVy,
       0x2: vXAndVy,
       0x4: vXAddVy,
@@ -273,11 +274,10 @@ export default (keyboard, render) => {
       vRegisters[inst.x] = vRegisters[inst.y]
     }
     
-    // 8xy1 - OR Vx, Vy
-    // Set Vx = Vx OR Vy.
-    // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. A bitwise OR compares the 
-    // corrseponding bits from two values, and if either bit is 1, then the same bit in the result is also 1. Otherwise, 
-    // it is 0.
+    // 8xy1 - OR Vx, Vy -> Vx = Vx | Vy
+    function vXOrVy () {
+      vRegisters[inst.x] = vRegisters[inst.x] | vRegisters[inst.y]
+    }
 
     // 8xy2 - AND Vx, Vy -> Vx = Vx & Vy
     function vXAndVy () {
