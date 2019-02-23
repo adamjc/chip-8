@@ -177,7 +177,7 @@ export default (keyboard, render, sound) => {
       0xF000: registerManipulation
     }
 
-    const macroOpcode = macroOpcodes[highByte] ? macroOpcodes[highByte] : notImplemented
+    const macroOpcode = macroOpcodes[highByte]
 
     macroOpcode({ nnn, n, x, y, kk }) // Yes, very ineffecient right now
   }
@@ -244,8 +244,10 @@ export default (keyboard, render, sound) => {
   // 5xy0 - SE Vx, Vy
   // Skip next instruction if Vx = Vy.
   // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
-  function skipIfVxVy (nnn) {
-    notImplemented()
+  function skipIfVxVy (inst) {
+    if (vRegisters[inst.x] === vRegisters[inst.y]) {
+      pc += 2
+    }
   }
 
   // 6xkk - LD Vx, byte
@@ -452,8 +454,6 @@ export default (keyboard, render, sound) => {
       }
       return
     }
-
-    notImplemented()
   }
 
   // 0xF000
@@ -547,10 +547,6 @@ export default (keyboard, render, sound) => {
     // Fx18 - LD ST, Vx -> Set sound timer = Vx.
     function setSoundTimer () {
       soundTimer = vRegisters[inst.x]
-    }
-
-    if (!microOpCodes[inst.kk]) {
-      notImplemented()
     }
 
     return microOpCodes[inst.kk]()
