@@ -111,9 +111,14 @@ let keyboard = (function () {
   }
 })()
 
-const chip8 = Chip8(keyboard, render)
+const sound = new Audio('./sound.wav')
+const chip8 = Chip8(keyboard, render, sound)
 
 window.addEventListener('keydown', ({ key }) => {
+  if (key === 'm') {
+    sound.play()
+  }
+
   if (Object.values(keyboard.keyMap).includes(key)) {
     keyboard.set(key, true)
   }

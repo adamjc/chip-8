@@ -1,5 +1,5 @@
 // Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-export default (keyboard, render) => {
+export default (keyboard, render, sound) => {
   // CHIP-8 Interpreter
   const WORD_SIZE = 8
 
@@ -108,6 +108,7 @@ export default (keyboard, render) => {
 
   // does a cpu cycle innit.
   let lastTimeDecremented = 0
+  let soundFlag = false
   function cycle () {
     const currentTime = Date.now()
     const dT = currentTime - lastTimeDecremented
@@ -116,6 +117,13 @@ export default (keyboard, render) => {
       // decrement delayTimer at a rate of 60Hz
       if (delayTimer > 0) {
         delayTimer -= 1
+      }
+
+      if (soundTimer > 0) {
+        soundTimer -= 1
+        if (soundTimer === 0) {
+          sound.play()
+        }
       }
 
       lastTimeDecremented = currentTime
@@ -290,13 +298,10 @@ export default (keyboard, render) => {
     }
     
     
-    // 8xy4 - ADD Vx, Vy -> Vx = Vx + Vy
-    // Set Vx = Vx + Vy, set VF = carry.
-    // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, 
-    // otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
+    // 8xy4 - ADD Vx, Vy -> Vx = Vx + Vy -> Vx = Vx + Vy, set VF = carry.
     function vXAddVy () {
       const result = vRegisters[inst.x] + vRegisters[inst.y]
-      
+
       if (result > 0xFF) {
         vRegisters[0xF] = 1
       } else {

@@ -12,6 +12,9 @@ module.exports = {
     copyWebpackPlugin([{
       from: path.resolve(__dirname, 'src/index.html'),
       to: path.resolve(__dirname, 'dist/index.html')
+    }, {
+      from: path.resolve(__dirname, 'src/sound.wav'),
+      to: path.resolve(__dirname, 'dist/sound.wav')
     }])
   ],
   devServer: {
