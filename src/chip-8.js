@@ -77,8 +77,6 @@ export default (keyboard, sound) => {
 
         if (soundTimer === 0) sound.play()
       }
-
-      lastTimeDecremented = currentTime
     }
 
     const inst = fetch()
