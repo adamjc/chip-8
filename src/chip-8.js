@@ -66,22 +66,16 @@ export default (keyboard, sound) => {
   }
 
   // does a cpu cycle innit.
-  let lastTimeDecremented = 0
-  function cycle () {
-    const currentTime = Date.now()
-    const dT = currentTime - lastTimeDecremented
+  function cycle (delta) {
+    // decrement delayTimer at a rate of 60Hz
     const timerRefreshRate = 1000 / 60
-    if (dT >= timerRefreshRate) {
-      // decrement delayTimer at a rate of 60Hz
-      if (delayTimer > 0) {
-        delayTimer -= 1
-      }
+    if (delta >= timerRefreshRate) {
+      if (delayTimer > 0) delayTimer -= 1
 
       if (soundTimer > 0) {
         soundTimer -= 1
-        if (soundTimer === 0) {
-          sound.play()
-        }
+
+        if (soundTimer === 0) sound.play()
       }
 
       lastTimeDecremented = currentTime

@@ -3,8 +3,8 @@ import Chip8 from './chip-8'
 const SCALE = 10
 
 let game
+
 function loadMemory (file) {
-  console.log('loading memory')
   const array = new Uint8Array(file)
 
   chip8.setMemory(array, 0x200)
@@ -78,18 +78,31 @@ let keyboard = (function () {
   }
 })()
 
-const sound = new Audio('./sound.wav')
-const chip8 = Chip8(keyboard, sound)
-
 window.addEventListener('keydown', ({ key }) => {
   if (Object.values(keyboard.keyMap).includes(key)) {
     keyboard.set(key, true)
   }
 })
 
+document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mousedown', event => {
+  const key = event.target.innerHTML
+  if (Object.values(keyboard.keyMap).includes(key)) {
+    keyboard.set(key, true)
+  }
+}))
+
 window.addEventListener('keyup', ({ key }) => {
   keyboard.set(key, false)
 })
+
+document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mouseup', event => {
+  const key = event.target.innerHTML
+  keyboard.set(key, false)
+}))
+
+const sound = new Audio('./sound.wav')
+
+const chip8 = Chip8(keyboard, sound)
 
 function reset () {
   if (game) {
@@ -108,18 +121,6 @@ document.getElementById('game-picker').addEventListener('change', event => {
   getGame(event.target.value)
 }, false)
 
-document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mousedown', event => {
-  const key = event.target.innerHTML
-  if (Object.values(keyboard.keyMap).includes(key)) {
-    keyboard.set(key, true)
-  }
-}))
-
-document.querySelectorAll('.game-controls__button').forEach(el => el.addEventListener('mouseup', event => {
-  const key = event.target.innerHTML
-  keyboard.set(key, false)
-}))
-
 function getGame (game) {
   fetch(`./games/${game}`)
     .then(response => response.blob())
@@ -135,7 +136,6 @@ const Scene = new Phaser.Class({
   initialize: function Scene () {
     Phaser.Scene.call(this, { key: 'example' })
   },
-  preload: preload,
   create: create,
   applyPipeline: applyPipeline,
   update: update
@@ -149,22 +149,20 @@ const config = {
   scene: [ Scene ]
 }
 
-function preload () {
-}
-
-let graphics
-const DISPLAY_WIDTH = 64
-const DISPLAY_HEIGHT = 32
-let phaserDisplay = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
-
-for (let x = 0; x < phaserDisplay.length; x += 1) {
-  for (let y = 0; y < phaserDisplay[x].length; y += 1) {
-    phaserDisplay[x][y] = new Phaser.Geom.Rectangle(x * SCALE, y * SCALE, SCALE, SCALE)
-  }
-}
-
 function create () {
-  graphics = this.add.graphics({ fillStyle: { color: 0xffffff }})
+  const DISPLAY_WIDTH = chip8.getDisplay().length
+  const DISPLAY_HEIGHT = chip8.getDisplay()[0].length
+
+  const phaserDisplay = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
+
+  for (let x = 0; x < phaserDisplay.length; x += 1) {
+    for (let y = 0; y < phaserDisplay[x].length; y += 1) {
+      phaserDisplay[x][y] = new Phaser.Geom.Rectangle(x * SCALE, y * SCALE, SCALE, SCALE)
+    }
+  }
+
+  this.phaserDisplay = phaserDisplay
+  this.graphics = this.add.graphics({ fillStyle: { color: 0xffffff }})
   this.pipeline = this.game.renderer.addPipeline('Pipeline', new Pipeline(this.game))
   this.applyPipeline()
 }
@@ -174,18 +172,18 @@ function update (_, delta) {
   // cycle the CPU "many" times, depending on how long the draw loop took
   const cycles = Math.floor(delta / cpuSpeed)
   for (var i = 0; i < cycles; i += 1) {
-    chip8.cycle()
+    chip8.cycle(delta)
   }
 
   if (chip8.getDrawFlag()) {
-    graphics.clear()  
+    this.graphics.clear()  
     const display = chip8.getDisplay()
     for (var x = 0; x < display.length; x += 1) {
       for (var y = 0; y < display[0].length; y += 1) {
         const pixel = display[x][y]
-        graphics.fillStyle(pixel ? 0xffffff : 0x0)
-        const rect = phaserDisplay[x][y]
-        graphics.fillRectShape(rect)
+        this.graphics.fillStyle(pixel ? 0xffffff : 0x0)
+        const rect = this.phaserDisplay[x][y]
+        this.graphics.fillRectShape(rect)
       }
     }
     chip8.drawFlag = false
