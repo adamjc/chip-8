@@ -24,3 +24,7 @@ body {
 #game {
   display: flex;
 }
+
+#game canvas {
+  border-radius: 35px/42px;
+}

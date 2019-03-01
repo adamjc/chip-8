@@ -2,32 +2,14 @@ import Chip8 from './chip-8'
 
 const SCALE = 10
 
+let game
 function loadMemory (file) {
   console.log('loading memory')
   const array = new Uint8Array(file)
 
   chip8.setMemory(array, 0x200)
 
-  chip8.start(config)
-}
-
-const canvas = document.createElement('canvas')
-canvas.id = 'canvas'
-canvas.width = 64 * SCALE
-canvas.height = 32 * SCALE
-document.getElementById('game').appendChild(canvas)
-const context = canvas.getContext('2d')
-
-function render () {
-  const display = chip8.getDisplay()
-
-  for (var x = 0; x < display.length; x += 1) {
-    for (var y = 0; y < display[0].length; y += 1) {
-      const pixel = display[x][y]
-      context.fillStyle = pixel ? '#fff' : '#000'
-      context.fillRect(x * SCALE, y * SCALE, SCALE, SCALE)
-    }
-  }
+  game = new Phaser.Game(config)
 }
 
 let keyboard = (function () {
@@ -97,7 +79,7 @@ let keyboard = (function () {
 })()
 
 const sound = new Audio('./sound.wav')
-const chip8 = Chip8(keyboard, render, sound)
+const chip8 = Chip8(keyboard, sound)
 
 window.addEventListener('keydown', ({ key }) => {
   if (Object.values(keyboard.keyMap).includes(key)) {
@@ -109,12 +91,20 @@ window.addEventListener('keyup', ({ key }) => {
   keyboard.set(key, false)
 })
 
-document.getElementById('reset').addEventListener('click', _ => {
+function reset () {
+  if (game) {
+    game.canvas.remove()
+    game.scene.stop()
+    game.destroy()
+  }
+
   chip8.reset()
-})
+}
+
+document.getElementById('reset').addEventListener('click', _ => reset())
 
 document.getElementById('game-picker').addEventListener('change', event => {
-  chip8.reset()
+  reset()
   getGame(event.target.value)
 }, false)
 
@@ -155,6 +145,7 @@ const config = {
   type: Phaser.AUTO,
   width: 640,
   height: 320,
+  parent: 'game',
   scene: [ Scene ]
 }
 
@@ -238,6 +229,7 @@ const shader = `
     vec2 crtCoords = crt(outTexCoord);
 
     if (crtCoords.x < 0.0 || crtCoords.x > 1.0 || crtCoords.y < 0.0 || crtCoords.y > 1.0) {
+      gl_FragColor.rgb = vec3(0.85, 0.85, 0.65);
       return;
     }
 

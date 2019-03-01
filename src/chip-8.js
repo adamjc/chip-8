@@ -1,10 +1,6 @@
 // Made with a loooot of help from this excellent resource: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-export default (keyboard, render, sound) => {
-  // CHIP-8 Interpreter
+export default (keyboard, sound) => {
   const WORD_SIZE = 8
-
-  // It has 16 8-bit data registers. V[0xF] is the carry register.
-  let vRegisters = new Uint8Array(16)
 
   // It was originally designed to work on 4k computers, so lets give ourselves 4k of memory
   // 0x0 -> 0x1FF is used to store the system font (it was originally used to store the interpreter data, back when it
@@ -34,33 +30,19 @@ export default (keyboard, render, sound) => {
 
   memory.set(fonts, 0)
 
-  // There are 2 timers, a delay timer and a sound timer, both decrease to 0 at a rate of 60Hz,
-  // once at 0 they stay there
-  let delayTimer = 0
+  let vRegisters = new Uint8Array(16) // It has 16 8-bit data registers. V[0xF] is the carry register.
+  let delayTimer = 0 // When the delay timer hits 0, it stays there.
+  let soundTimer = 0 // When the sound timer hits 0, it stays there, and a monotone sound is played.
+  let pc = 0x200 // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
+  let iRegister = pc // It also has a 16-bit register, usually used for addressing memory
+  let sp = 0 // A stack pointer, allows us to have function calls.
+  let stack = new Array(16) // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used?
 
-  // When the sound timer hits 0, a monotone sound is played.
-  let soundTimer = 0
-
-  // And of course a (16-bit) program counter, starting at... 0x200 (where the program is loaded in!)
-  let pc = 0x200
-
-  // It also has a 16-bit register, usually used for addressing memory
-  let iRegister = pc
-
-  // A stack pointer, allows us to have function calls.
-  let sp = 0
-
-  // The stack. Documentation says it's 16 deep, but apparently only 10 are ever used?
-  let stack = new Array(16)
-
-  // It utilises a 64x32 pixel display... we will get the chip-8 to write to these values, and in our `emulator` code,
-  // we will write these values to a screen. Simple! (should be!).
+  // It utilises a 64x32 pixel display
   const DISPLAY_WIDTH = 64
   const DISPLAY_HEIGHT = 32
   let display = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
-
   let drawFlag = true
-  let animationFrame
 
   function setMemory (file, start) {
     memory.set(file, start)
@@ -70,34 +52,7 @@ export default (keyboard, render, sound) => {
     return display
   }
 
-  function start (config) {
-    console.log('starting...')
-    const game = new Phaser.Game(config)
-    // console.log('Starting...')
-    // let lastTimeUpdated = Date.now()
-    // const cpuSpeed = 1000 / 500 // 500Mhz
-    // animationFrame = window.requestAnimationFrame(function loop () {
-    //   // cycle the CPU "many" times, depending on how long the draw loop took
-    //   // const now = Date.now()
-    //   // const diff = now - lastTimeUpdated
-    //   // const cycles = Math.floor(diff / cpuSpeed)
-    //   // for (var i = 0; i < cycles; i += 1) {
-    //   //   cycle()
-    //   // }
-
-    //   if (drawFlag) {
-    //     render()
-    //     drawFlag = false
-    //   }
-
-    //   // lastTimeUpdated = now
-
-    //   animationFrame = window.requestAnimationFrame(loop)
-    // })
-  }
-
   function reset () {
-    window.cancelAnimationFrame(animationFrame)
     memory = new Uint8Array(4096)
     vRegisters = new Uint8Array(16)
     memory.set(fonts, 0)
@@ -553,7 +508,6 @@ export default (keyboard, render, sound) => {
     getDrawFlag,
     getDisplay,
     setMemory,
-    start,
     reset
   }
 }
