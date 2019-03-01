@@ -8,7 +8,7 @@ function loadMemory (file) {
 
   chip8.setMemory(array, 0x200)
 
-  chip8.start()
+  chip8.start(config)
 }
 
 const canvas = document.createElement('canvas')
@@ -139,3 +139,119 @@ function getGame (game) {
       reader.readAsArrayBuffer(body)
     })
 }
+
+const Scene = new Phaser.Class({
+  Extends: Phaser.Scene,
+  initialize: function Scene () {
+    Phaser.Scene.call(this, { key: 'example' })
+  },
+  preload: preload,
+  create: create,
+  applyPipeline: applyPipeline,
+  update: update
+})
+
+const config = {
+  type: Phaser.AUTO,
+  width: 640,
+  height: 320,
+  scene: [ Scene ]
+}
+
+function preload () {
+}
+
+let graphics
+const DISPLAY_WIDTH = 64
+const DISPLAY_HEIGHT = 32
+let phaserDisplay = new Array(DISPLAY_WIDTH).fill().map(_ => new Array(DISPLAY_HEIGHT).fill(0))
+
+for (let x = 0; x < phaserDisplay.length; x += 1) {
+  for (let y = 0; y < phaserDisplay[x].length; y += 1) {
+    phaserDisplay[x][y] = new Phaser.Geom.Rectangle(x * SCALE, y * SCALE, SCALE, SCALE)
+  }
+}
+
+function create () {
+  graphics = this.add.graphics({ fillStyle: { color: 0xffffff }})
+  this.pipeline = this.game.renderer.addPipeline('Pipeline', new Pipeline(this.game))
+  this.applyPipeline()
+}
+
+function update (_, delta) {
+  const cpuSpeed = 1000 / 500 // 500Mhz
+  // cycle the CPU "many" times, depending on how long the draw loop took
+  const cycles = Math.floor(delta / cpuSpeed)
+  for (var i = 0; i < cycles; i += 1) {
+    chip8.cycle()
+  }
+
+  if (chip8.getDrawFlag()) {
+    graphics.clear()  
+    const display = chip8.getDisplay()
+    for (var x = 0; x < display.length; x += 1) {
+      for (var y = 0; y < display[0].length; y += 1) {
+        const pixel = display[x][y]
+        graphics.fillStyle(pixel ? 0xffffff : 0x0)
+        const rect = phaserDisplay[x][y]
+        graphics.fillRectShape(rect)
+      }
+    }
+    chip8.drawFlag = false
+  }
+}
+
+function applyPipeline () {
+  this.cameras.main.setRenderToTexture(this.pipeline)
+}
+
+const shader = `
+  precision mediump float;
+
+  uniform float time;
+  uniform vec2 resolution;
+  uniform sampler2D uMainSampler;
+
+  varying vec2 outTexCoord;
+
+  vec2 crt (vec2 coord) {
+    // lower == more curved
+    float straightness = 2.1;
+
+    // put in symmetrical coords
+    coord = coord - 0.5;
+
+    // shrink
+    coord *= 1.1;	
+
+    // deform coords
+    coord.x *= 1.0 + pow(coord.y / (straightness + 0.5), 2.0);
+    coord.y *= 1.0 + pow(coord.x / straightness, 2.0);
+
+    // transform back to 0.0 - 1.0 space
+    coord  = coord + 0.5;
+
+    return coord;
+  }
+
+  void main () {
+    vec2 crtCoords = crt(outTexCoord);
+
+    if (crtCoords.x < 0.0 || crtCoords.x > 1.0 || crtCoords.y < 0.0 || crtCoords.y > 1.0) {
+      return;
+    }
+
+    gl_FragColor = texture2D(uMainSampler, crtCoords);
+  }
+`
+
+const Pipeline = new Phaser.Class({
+  Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
+  initialize: function Pipeline (game) {
+    Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline.call(this, {
+      game: game,
+      renderer: game.renderer,
+      fragShader: shader
+    })
+  }
+})

@@ -70,28 +70,30 @@ export default (keyboard, render, sound) => {
     return display
   }
 
-  function start () {
-    console.log('Starting...')
-    let lastTimeUpdated = Date.now()
-    const cpuSpeed = 1000 / 500 // 500Mhz
-    animationFrame = window.requestAnimationFrame(function loop () {
-      // cycle the CPU "many" times, depending on how long the draw loop took
-      const now = Date.now()
-      const diff = now - lastTimeUpdated
-      const cycles = Math.floor(diff / cpuSpeed)
-      for (var i = 0; i < cycles; i += 1) {
-        cycle()
-      }
+  function start (config) {
+    console.log('starting...')
+    const game = new Phaser.Game(config)
+    // console.log('Starting...')
+    // let lastTimeUpdated = Date.now()
+    // const cpuSpeed = 1000 / 500 // 500Mhz
+    // animationFrame = window.requestAnimationFrame(function loop () {
+    //   // cycle the CPU "many" times, depending on how long the draw loop took
+    //   // const now = Date.now()
+    //   // const diff = now - lastTimeUpdated
+    //   // const cycles = Math.floor(diff / cpuSpeed)
+    //   // for (var i = 0; i < cycles; i += 1) {
+    //   //   cycle()
+    //   // }
 
-      if (drawFlag) {
-        render()
-        drawFlag = false
-      }
+    //   if (drawFlag) {
+    //     render()
+    //     drawFlag = false
+    //   }
 
-      lastTimeUpdated = now
+    //   // lastTimeUpdated = now
 
-      animationFrame = window.requestAnimationFrame(loop)
-    })
+    //   animationFrame = window.requestAnimationFrame(loop)
+    // })
   }
 
   function reset () {
@@ -542,7 +544,13 @@ export default (keyboard, render, sound) => {
     return microOpCodes[inst.kk]()
   }
 
+  function getDrawFlag () {
+    return drawFlag
+  }
+
   return {
+    cycle,
+    getDrawFlag,
     getDisplay,
     setMemory,
     start,
