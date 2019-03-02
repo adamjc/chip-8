@@ -8,8 +8,20 @@ function loadMemory (file) {
   const array = new Uint8Array(file)
 
   chip8.setMemory(array, 0x200)
-
   game = gameEngine(chip8, 'game')
+}
+
+const sound = new Audio('./sound.wav')
+const chip8 = Chip8(keyboard, sound)
+
+function reset () {
+  if (game) {
+    game.canvas.remove()
+    game.scene.stop()
+    game.destroy()
+  }
+
+  chip8.reset()
 }
 
 window.addEventListener('keydown', ({ key }) => {
@@ -34,33 +46,18 @@ document.querySelectorAll('.game-controls__button').forEach(el => el.addEventLis
   keyboard.set(key, false)
 }))
 
-const sound = new Audio('./sound.wav')
-
-const chip8 = Chip8(keyboard, sound)
-
-function reset () {
-  if (game) {
-    game.canvas.remove()
-    game.scene.stop()
-    game.destroy()
+document.getElementById('reset').addEventListener('click', _ => reset())
+document.getElementById('game-picker').addEventListener('change', event => {
+  function getGame (game) {
+    fetch(`./games/${game}`)
+      .then(response => response.blob())
+      .then(body => {
+        const reader = new FileReader()
+        reader.addEventListener("loadend", _ => loadMemory(reader.result))
+        reader.readAsArrayBuffer(body)
+      })
   }
 
-  chip8.reset()
-}
-
-document.getElementById('reset').addEventListener('click', _ => reset())
-
-function getGame (game) {
-  fetch(`./games/${game}`)
-    .then(response => response.blob())
-    .then(body => {
-      const reader = new FileReader()
-      reader.addEventListener("loadend", _ => loadMemory(reader.result))
-      reader.readAsArrayBuffer(body)
-    })
-}
-
-document.getElementById('game-picker').addEventListener('change', event => {
   reset()
   getGame(event.target.value)
 }, false)
